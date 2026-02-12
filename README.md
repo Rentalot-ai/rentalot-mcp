@@ -4,7 +4,15 @@ MCP (Model Context Protocol) server for the [Rentalot](https://rentalot.ai) API.
 
 ## Quick Start
 
-### Claude Code / Claude Desktop
+### Claude Code (one-liner)
+
+```bash
+claude mcp add rentalot -e RENTALOT_API_KEY=ra_your_api_key_here -- npx -y @rentalot/mcp-server
+```
+
+Verify with `/mcp` inside Claude Code.
+
+### Claude Desktop / Cursor / Windsurf
 
 Add to your MCP config (`.mcp.json` or `claude_desktop_config.json`):
 
