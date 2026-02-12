@@ -2,15 +2,15 @@
 
 ## Pre-Publish
 
-- [ ] Add `LICENSE` file (MIT)
-- [ ] Local dev test: add to rentalot repo `.mcp.json` with stdio pointing at built `dist/index.js`, `RENTALOT_BASE_URL=http://localhost:3000`, test tools from Claude Code against `make dev`
-- [ ] Test all 37 tools end-to-end against live dev API
+- [x] Add `LICENSE` file (MIT)
+- [x] Local dev test: add to rentalot repo `.mcp.json` with stdio pointing at built `dist/index.js`, `RENTALOT_BASE_URL=http://localhost:3000`, test tools from Claude Code against `make dev`
+- [x] Test all 37 tools end-to-end against live dev API (35 pass, 2 known: `get_conversation` route missing, `send_message` needs channel adapter)
 - [ ] Set up npm org `@rentalot` on npmjs.com
 - [ ] First publish: `npm publish --access public`
 
 ## CI/CD
 
-- [ ] GitLab CI pipeline: lint + typecheck + build on push
+- [x] GitLab CI pipeline: lint + typecheck + build on push
 - [ ] Automated npm publish on git tag (e.g. `v0.1.0`)
 
 ## Post-Publish

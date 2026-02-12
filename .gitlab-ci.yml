@@ -1,0 +1,17 @@
+stages:
+  - check
+
+lint-typecheck-build:
+  stage: check
+  image: node:22-slim
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - node_modules/
+  script:
+    - npm ci
+    - npm run lint
+    - npm run typecheck
+    - npm run build
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push"
