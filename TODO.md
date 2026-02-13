@@ -19,6 +19,22 @@
 - [ ] Add MCP setup docs page to rentalot Nextra site (`content/guides/mcp-setup.mdx`)
 - [ ] Open-source: flip repo to public when ready for launch
 
+## Sync with rentalot v1 API
+
+- [ ] Add `getFollowupSettings` tool — `GET /api/v1/settings/followups` (returns `enabled`, `idleHours`, `maxSteps`)
+- [ ] Add `updateFollowupSettings` tool — `PATCH /api/v1/settings/followups` (body: `{ enabled?, idleHours?, maxSteps? }`)
+
+### Phase 3 endpoints (just shipped)
+
+- [ ] `create_contact` — `POST /api/v1/contacts` (body: `{ name, email?, phone?, status?, channelPreference?, source?, referralSource? }`)
+- [ ] `search_conversations` — `GET /api/v1/conversations/search?query=...&limit=...`
+- [ ] `check_showing_availability` — `GET /api/v1/showings/availability?propertyId=&preferredDate=&dateFrom=&dateTo=`
+- [ ] `list_property_images` — `GET /api/v1/properties/{id}/images`
+- [ ] `presign_image_upload` — `POST /api/v1/properties/{id}/images/presign` (body: `{ fileName, contentType, sizeBytes }`)
+- [ ] `confirm_image_upload` — `POST /api/v1/properties/{id}/images/confirm` (body: `{ r2Key, contentType, sizeBytes, altText? }`)
+- [ ] `delete_property_images` — `DELETE /api/v1/properties/{id}/images` (body: `{ imageIds[] }`)
+- [ ] `reorder_property_images` — `PATCH /api/v1/properties/{id}/images/reorder` (body: `{ imageIds[] }`)
+
 ## Future
 
 - [ ] Remote MCP server — Streamable HTTP transport at `mcp.rentalot.ai/mcp` with OAuth 2.1

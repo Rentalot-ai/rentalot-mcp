@@ -1,20 +1,50 @@
 # @rentalot/mcp-server
 
-MCP (Model Context Protocol) server for the [Rentalot](https://rentalot.ai) API. Lets AI assistants (Claude, Cursor, Windsurf, etc.) manage rental properties, contacts, showings, and more via natural language.
+MCP server for the [Rentalot](https://rentalot.ai) API. Manage rental properties, contacts, showings, conversations, and more from any AI assistant.
 
-## Quick Start
+## Setup
 
-### Claude Code (one-liner)
+### Claude Code
 
 ```bash
-claude mcp add rentalot -e RENTALOT_API_KEY=ra_your_api_key_here -- npx -y @rentalot/mcp-server
+claude mcp add rentalot -e RENTALOT_API_KEY=ra_your_key -- npx -y @rentalot/mcp-server
 ```
 
-Verify with `/mcp` inside Claude Code.
+### Codex (OpenAI)
+
+```bash
+codex mcp add --env RENTALOT_API_KEY=ra_your_key -- npx -y @rentalot/mcp-server
+```
+
+### Gemini CLI
+
+```bash
+gemini mcp add --transport stdio rentalot -- npx -y @rentalot/mcp-server
+```
+
+Then add the env var to `~/.gemini/settings.json`:
+
+```json
+{
+  "mcpServers": {
+    "rentalot": {
+      "command": "npx",
+      "args": ["-y", "@rentalot/mcp-server"],
+      "env": { "RENTALOT_API_KEY": "ra_your_key" }
+    }
+  }
+}
+```
 
 ### Claude Desktop / Cursor / Windsurf
 
-Add to your MCP config (`.mcp.json` or `claude_desktop_config.json`):
+All three use the same JSON format — just different file paths:
+
+| Client | Config file |
+|--------|-------------|
+| Claude Desktop | `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) |
+| Cursor | `.cursor/mcp.json` (project) or `~/.cursor/mcp.json` (global) |
+| Windsurf | `~/.codeium/windsurf/mcp_config.json` |
 
 ```json
 {
@@ -23,8 +53,26 @@ Add to your MCP config (`.mcp.json` or `claude_desktop_config.json`):
       "command": "npx",
       "args": ["-y", "@rentalot/mcp-server"],
       "env": {
-        "RENTALOT_API_KEY": "ra_your_api_key_here"
+        "RENTALOT_API_KEY": "ra_your_key"
       }
+    }
+  }
+}
+```
+
+### OpenCode
+
+Add to `~/.config/opencode/opencode.json`:
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "rentalot": {
+      "type": "local",
+      "command": ["npx", "-y", "@rentalot/mcp-server"],
+      "environment": { "RENTALOT_API_KEY": "ra_your_key" },
+      "enabled": true
     }
   }
 }
@@ -34,8 +82,8 @@ Add to your MCP config (`.mcp.json` or `claude_desktop_config.json`):
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `RENTALOT_API_KEY` | Yes | — | Your Rentalot API key (starts with `ra_`) |
-| `RENTALOT_BASE_URL` | No | `https://rentalot.ai` | API base URL (for self-hosted or dev) |
+| `RENTALOT_API_KEY` | Yes | — | API key from Settings > API Keys (prefixed `ra_`) |
+| `RENTALOT_BASE_URL` | No | `https://rentalot.ai` | Override for self-hosted or local dev |
 
 ## Tools (37)
 
@@ -60,6 +108,13 @@ Add to your MCP config (`.mcp.json` or `claude_desktop_config.json`):
 
 ```bash
 npm install
-npm run dev    # Run with tsx (requires RENTALOT_API_KEY)
-npm run build  # Compile TypeScript
+npm run build      # Compile TypeScript
+npm run dev        # Run with tsx (hot reload)
+npm run lint       # ESLint
+npm run typecheck  # tsc --noEmit
+npm run test:e2e   # E2E test all 37 tools against local dev server
 ```
+
+## License
+
+MIT
