@@ -49,8 +49,11 @@ export class ApiClient {
     });
   }
 
-  async delete<T = unknown>(path: string): Promise<ApiResponse<T>> {
-    return this.request<T>(`${this.baseUrl}${path}`, { method: "DELETE" });
+  async delete<T = unknown>(path: string, body?: unknown): Promise<ApiResponse<T>> {
+    return this.request<T>(`${this.baseUrl}${path}`, {
+      method: "DELETE",
+      ...(body ? { headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) } : {}),
+    });
   }
 
   private async request<T>(url: string, init: RequestInit): Promise<ApiResponse<T>> {

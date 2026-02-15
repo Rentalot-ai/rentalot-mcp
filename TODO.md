@@ -23,40 +23,40 @@
 
 ### Settings tools
 
-- [ ] `get_followup_settings` — `GET /api/v1/settings/followups` (returns `{ enabled, idleHours, maxSteps }`)
-- [ ] `update_followup_settings` — `PATCH /api/v1/settings/followups` (body: `{ enabled?, idleHours?, maxSteps? }`)
+- [x] `get_followup_settings` — `GET /api/v1/settings/followups` (returns `{ enabled, idleHours, maxSteps }`)
+- [x] `update_followup_settings` — `PATCH /api/v1/settings/followups` (body: `{ enabled?, idleHours?, maxSteps? }`)
 
 ### Contact tools (missing)
 
-- [ ] `create_contact` — `POST /api/v1/contacts` (body: `{ name, email?, phone?, status?, channelPreference?, source?, referralSource? }`)
-- [ ] `delete_contact` — `DELETE /api/v1/contacts/{id}` (soft-delete, returns 204)
+- [x] `create_contact` — `POST /api/v1/contacts` (body: `{ name, email?, phone?, status?, channelPreference?, source?, referralSource? }`)
+- [x] `delete_contact` — `DELETE /api/v1/contacts/{id}` (soft-delete, returns 204)
 
 ### Webhook tools (missing get + update)
 
-- [ ] `get_webhook` — `GET /api/v1/webhooks/{id}` (already in v1 API, MCP only has list/create/delete/test)
-- [ ] `update_webhook` — `PATCH /api/v1/webhooks/{id}` (body: `{ url?, events?, active?, description? }`)
+- [x] `get_webhook` — `GET /api/v1/webhooks/{id}` (already in v1 API, MCP only has list/create/delete/test)
+- [x] `update_webhook` — `PATCH /api/v1/webhooks/{id}` (body: `{ url?, events?, active?, description? }`)
 
 ### Conversation tools (missing search)
 
-- [ ] `search_conversations` — `GET /api/v1/conversations/search?query=...&limit=...`
+- [x] `search_conversations` — `GET /api/v1/conversations/search?query=...&limit=...`
 
 ### Showing tools (missing availability)
 
-- [ ] `check_showing_availability` — `GET /api/v1/showings/availability?propertyId=&preferredDate=&dateFrom=&dateTo=`
+- [x] `check_showing_availability` — `GET /api/v1/showings/availability?propertyId=&preferredDate=&dateFrom=&dateTo=`
 
 ### Property image tools (entire resource — 5 tools)
 
-- [ ] `list_property_images` — `GET /api/v1/properties/{id}/images`
-- [ ] `presign_image_upload` — `POST /api/v1/properties/{id}/images/presign` (body: `{ fileName, contentType, sizeBytes }`)
-- [ ] `confirm_image_upload` — `POST /api/v1/properties/{id}/images/confirm` (body: `{ r2Key, contentType, sizeBytes, altText? }`)
-- [ ] `delete_property_images` — `DELETE /api/v1/properties/{id}/images` (body: `{ imageIds[] }`)
-- [ ] `reorder_property_images` — `PATCH /api/v1/properties/{id}/images/reorder` (body: `{ imageIds[] }`)
+- [x] `list_property_images` — `GET /api/v1/properties/{id}/images`
+- [x] `presign_image_upload` — `POST /api/v1/properties/{id}/images/presign` (body: `{ fileName, contentType, sizeBytes }`)
+- [x] `confirm_image_upload` — `POST /api/v1/properties/{id}/images/confirm` (body: `{ r2Key, contentType, sizeBytes, altText? }`)
+- [x] `delete_property_images` — `DELETE /api/v1/properties/{id}/images` (body: `{ imageIds[] }`)
+- [x] `reorder_property_images` — `PATCH /api/v1/properties/{id}/images/reorder` (body: `{ imageIds[] }`)
 
 ### Session tools (new resource — just added to v1 API)
 
-- [ ] `list_sessions` — `GET /api/v1/sessions?contactId=&workflowTemplateId=&status=&reviewStatus=&page=&limit=`
-- [ ] `get_session` — `GET /api/v1/sessions/{id}`
-- [ ] `review_session` — `PATCH /api/v1/sessions/{id}/review` (body: `{ reviewStatus: "approved"|"denied", reviewNotes? }`)
+- [x] `list_sessions` — `GET /api/v1/sessions?contactId=&workflowTemplateId=&status=&reviewStatus=&page=&limit=`
+- [x] `get_session` — `GET /api/v1/sessions/{id}`
+- [x] `review_session` — `PATCH /api/v1/sessions/{id}/review` (body: `{ reviewStatus: "approved"|"denied", reviewNotes? }`)
 
 ## Future
 

@@ -55,6 +55,40 @@ export function registerWebhookTools(server: McpServer, api: ApiClient) {
   );
 
   server.tool(
+    "get_webhook",
+    "Use to get details for a specific webhook subscription by ID.",
+    {
+      webhookId: z.string().uuid().describe("Webhook subscription ID"),
+    },
+    async ({ webhookId }) => {
+      const res = await api.get(`/api/v1/webhooks/${webhookId}`);
+      if (res.error) {
+        return { content: [{ type: "text" as const, text: `Error: ${res.error.message}` }], isError: true };
+      }
+      return { content: [{ type: "text" as const, text: JSON.stringify(res.data, null, 2) }] };
+    }
+  );
+
+  server.tool(
+    "update_webhook",
+    "Use to update a webhook subscription. Only include fields you want to change. Write operation — requires Pro tier or higher.",
+    {
+      webhookId: z.string().uuid().describe("Webhook subscription ID to update"),
+      url: z.string().url().optional().describe("New HTTPS endpoint URL"),
+      events: z.array(z.enum(WEBHOOK_EVENTS)).min(1).optional().describe("New event types to subscribe to"),
+      active: z.boolean().optional().describe("Enable or disable the webhook"),
+      description: z.string().max(500).optional().describe("Updated description"),
+    },
+    async ({ webhookId, ...body }) => {
+      const res = await api.patch(`/api/v1/webhooks/${webhookId}`, body);
+      if (res.error) {
+        return { content: [{ type: "text" as const, text: `Error: ${res.error.message}` }], isError: true };
+      }
+      return { content: [{ type: "text" as const, text: JSON.stringify(res.data, null, 2) }] };
+    }
+  );
+
+  server.tool(
     "delete_webhook",
     "Use to delete a webhook subscription. Events will no longer be delivered to the endpoint. Write operation — requires Pro tier or higher.",
     {

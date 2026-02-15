@@ -13,6 +13,9 @@ import { registerDraftTools } from "./tools/drafts.js";
 import { registerFollowupTools } from "./tools/followups.js";
 import { registerWorkflowTools } from "./tools/workflows.js";
 import { registerWebhookTools } from "./tools/webhooks.js";
+import { registerSettingsTools } from "./tools/settings.js";
+import { registerPropertyImageTools } from "./tools/property-images.js";
+import { registerSessionTools } from "./tools/sessions.js";
 import { registerApiDocsResource } from "./resources/api-docs.js";
 
 const apiKey = process.env.RENTALOT_API_KEY;
@@ -42,6 +45,9 @@ registerDraftTools(server, api);
 registerFollowupTools(server, api);
 registerWorkflowTools(server, api);
 registerWebhookTools(server, api);
+registerSettingsTools(server, api);
+registerPropertyImageTools(server, api);
+registerSessionTools(server, api);
 
 // Register resources
 registerApiDocsResource(server);

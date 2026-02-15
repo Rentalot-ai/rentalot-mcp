@@ -37,6 +37,22 @@ export function registerConversationTools(server: McpServer, api: ApiClient) {
   );
 
   server.tool(
+    "search_conversations",
+    "Use to search conversations by keyword. Returns conversations matching the query across message content. Read-only.",
+    {
+      query: z.string().max(200).describe("Search query to match against conversation content"),
+      limit: z.number().optional().describe("Maximum number of results to return"),
+    },
+    async (args) => {
+      const res = await api.get("/api/v1/conversations/search", args);
+      if (res.error) {
+        return { content: [{ type: "text" as const, text: `Error: ${res.error.message}` }], isError: true };
+      }
+      return { content: [{ type: "text" as const, text: JSON.stringify(res.data, null, 2) }] };
+    }
+  );
+
+  server.tool(
     "list_conversation_messages",
     "Use to list messages in a conversation. Returns paginated messages with direction (inbound/outbound), content, channel, and timestamp. Read-only.",
     {

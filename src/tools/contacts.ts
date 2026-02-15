@@ -59,4 +59,40 @@ export function registerContactTools(server: McpServer, api: ApiClient) {
       return { content: [{ type: "text" as const, text: JSON.stringify(res.data, null, 2) }] };
     }
   );
+
+  server.tool(
+    "create_contact",
+    "Use to create a new contact (prospect, tenant, etc.). Write operation — requires Pro tier or higher.",
+    {
+      name: z.string().describe("Contact's full name"),
+      email: z.string().email().optional().describe("Contact's email address"),
+      phone: z.string().optional().describe("Contact's phone number"),
+      status: z.enum(CONTACT_STATUS_ENUM).optional().describe("Contact lifecycle status (default: prospect)"),
+      channelPreference: z.string().optional().describe("Preferred communication channel"),
+      source: z.string().optional().describe("Lead source (e.g. zillow, website, referral)"),
+      referralSource: z.string().optional().describe("Who referred this contact"),
+    },
+    async (args) => {
+      const res = await api.post("/api/v1/contacts", args);
+      if (res.error) {
+        return { content: [{ type: "text" as const, text: `Error: ${res.error.message}` }], isError: true };
+      }
+      return { content: [{ type: "text" as const, text: JSON.stringify(res.data, null, 2) }] };
+    }
+  );
+
+  server.tool(
+    "delete_contact",
+    "Use to soft-delete a contact. The contact can be restored later. Write operation — requires Pro tier or higher.",
+    {
+      contactId: z.string().uuid().describe("The contact UUID to delete"),
+    },
+    async ({ contactId }) => {
+      const res = await api.delete(`/api/v1/contacts/${contactId}`);
+      if (res.error) {
+        return { content: [{ type: "text" as const, text: `Error: ${res.error.message}` }], isError: true };
+      }
+      return { content: [{ type: "text" as const, text: "Contact deleted successfully." }] };
+    }
+  );
 }

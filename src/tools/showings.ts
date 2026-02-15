@@ -90,6 +90,24 @@ export function registerShowingTools(server: McpServer, api: ApiClient) {
   );
 
   server.tool(
+    "check_showing_availability",
+    "Use to check available time slots for scheduling a property showing. Returns open slots for the given property and date range.",
+    {
+      propertyId: z.string().uuid().describe("Property ID to check availability for"),
+      preferredDate: z.string().optional().describe("Preferred date (ISO 8601 date, e.g. 2025-03-15)"),
+      dateFrom: z.string().optional().describe("Start of date range to check (ISO 8601 date)"),
+      dateTo: z.string().optional().describe("End of date range to check (ISO 8601 date)"),
+    },
+    async (args) => {
+      const res = await api.get("/api/v1/showings/availability", args);
+      if (res.error) {
+        return { content: [{ type: "text" as const, text: `Error: ${res.error.message}` }], isError: true };
+      }
+      return { content: [{ type: "text" as const, text: JSON.stringify(res.data, null, 2) }] };
+    }
+  );
+
+  server.tool(
     "delete_showing",
     "Use to permanently delete a showing. Prefer updating status to 'cancelled' instead. Write operation — requires Pro tier or higher.",
     {
