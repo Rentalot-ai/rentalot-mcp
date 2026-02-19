@@ -58,6 +58,20 @@
 - [x] `get_session` — `GET /api/v1/sessions/{id}`
 - [x] `review_session` — `PATCH /api/v1/sessions/{id}/review` (body: `{ reviewStatus: "approved"|"denied", reviewNotes? }`)
 
+### Bulk import tools (new — 2 tools)
+
+- [ ] `bulk_create_properties` — `POST /api/v1/properties/bulk` (body: `{ properties: Record<string, unknown>[] }`, max 500). Flexible field names (Zillow/AppFolio aliases auto-normalized). Returns `202 { data: { jobId, status, total } }`. Supports `Idempotency-Key`. Requires Pro+.
+- [ ] `get_bulk_import_job` — `GET /api/v1/properties/bulk/{jobId}` (returns `{ jobId, status, total, created, failed, createdPropertyIds, unmappedFields, errors[], createdAt, completedAt }`)
+
+### Batch image tools (new — 2 tools)
+
+- [ ] `presign_image_batch` — `POST /api/v1/properties/{id}/images/presign-batch` (body: `{ images: [{ fileName, contentType, sizeBytes }] }`, max 20). Returns `{ data: [{ fileName, uploadUrl, r2Key }] }`.
+- [ ] `confirm_image_batch` — `POST /api/v1/properties/{id}/images/confirm-batch` (body: `{ images: [{ r2Key, contentType, sizeBytes, altText? }] }`, max 20). Supports `Idempotency-Key`. Returns `{ data: [{ id, url, altText, order }] }`.
+
+### Contact type update
+
+- [ ] Add `appliedAt` (ISO 8601 timestamp, nullable) to contact type — v1 API GET now returns it. Auto-set when status → `applicant`, cleared on other transitions. `notes` field was also added but is stripped from the public API.
+
 ## Future
 
 - [ ] Remote MCP server — Streamable HTTP transport at `mcp.rentalot.ai/mcp` with OAuth 2.1
