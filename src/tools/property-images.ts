@@ -150,4 +150,51 @@ export function registerPropertyImageTools(server: McpServer, api: ApiClient) {
       return { content: [{ type: "text" as const, text: JSON.stringify(res.data, null, 2) }] };
     }
   );
+
+  server.tool(
+    "import_property_images",
+    "Use to import property images from external URLs. The server downloads from the URLs (SSRF-protected) and uploads to R2 asynchronously. Returns a job ID to track progress. Supports Idempotency-Key header. Write operation — requires Pro tier or higher.",
+    {
+      propertyId: z.string().uuid().describe("The property UUID"),
+      urls: z
+        .array(z.string().url())
+        .min(1)
+        .max(20)
+        .describe("Array of image URLs to import (max 20)"),
+      idempotencyKey: z
+        .string()
+        .optional()
+        .describe("Optional idempotency key to prevent duplicate imports"),
+    },
+    async ({ propertyId, urls, idempotencyKey }) => {
+      const headers: Record<string, string> = {};
+      if (idempotencyKey) headers["Idempotency-Key"] = idempotencyKey;
+
+      const res = await api.post(
+        `/api/v1/properties/${propertyId}/images/import`,
+        { urls },
+        headers
+      );
+      if (res.error) {
+        return { content: [{ type: "text" as const, text: `Error: ${res.error.message}` }], isError: true };
+      }
+      return { content: [{ type: "text" as const, text: JSON.stringify(res.data, null, 2) }] };
+    }
+  );
+
+  server.tool(
+    "get_image_import_job",
+    "Use to check the status of an image import job. Returns progress including how many images have been imported, failed, total bytes, and any errors.",
+    {
+      propertyId: z.string().uuid().describe("The property UUID"),
+      jobId: z.string().describe("The import job ID returned from import_property_images"),
+    },
+    async ({ propertyId, jobId }) => {
+      const res = await api.get(`/api/v1/properties/${propertyId}/images/import/${jobId}`);
+      if (res.error) {
+        return { content: [{ type: "text" as const, text: `Error: ${res.error.message}` }], isError: true };
+      }
+      return { content: [{ type: "text" as const, text: JSON.stringify(res.data, null, 2) }] };
+    }
+  );
 }

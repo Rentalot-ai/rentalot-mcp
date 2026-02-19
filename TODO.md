@@ -68,6 +68,11 @@
 - [x] `presign_image_batch` — `POST /api/v1/properties/{id}/images/presign-batch` (body: `{ images: [{ fileName, contentType, sizeBytes }] }`, max 20). Returns `{ data: [{ fileName, uploadUrl, r2Key }] }`.
 - [x] `confirm_image_batch` — `POST /api/v1/properties/{id}/images/confirm-batch` (body: `{ images: [{ r2Key, contentType, sizeBytes, altText? }] }`, max 20). Supports `Idempotency-Key`. Returns `{ data: [{ id, url, altText, order }] }`.
 
+### Image import by URL tools (new — 2 tools)
+
+- [ ] `import_property_images` — `POST /api/v1/properties/{id}/images/import` (body: `{ urls: string[] }`, max 20). Server downloads from URLs (SSRF-protected), uploads to R2 asynchronously via Inngest. Supports `Idempotency-Key`. Returns `202 { data: { jobId, status: "pending", totalUrls } }`. Requires Pro+.
+- [ ] `get_image_import_job` — `GET /api/v1/properties/{id}/images/import/{jobId}` (returns `{ jobId, status, totalUrls, imported, failed, totalBytes, errors[], createdAt, completedAt }`). Note: `imageImportJobIds` also returned in `get_bulk_import_job` response for bulk imports that included image URLs.
+
 ### Contact type update
 
 - [x] Add `appliedAt` (ISO 8601 timestamp, nullable) to contact type — v1 API GET now returns it. Auto-set when status → `applicant`, cleared on other transitions. `notes` field was also added but is stripped from the public API.
