@@ -7,7 +7,7 @@ const CONTACT_STATUS_ENUM = ["prospect", "scheduled", "applicant", "renter", "ar
 export function registerContactTools(server: McpServer, api: ApiClient) {
   server.tool(
     "list_contacts",
-    "Use to list contacts (prospects, tenants, etc.). Supports filtering by lifecycle status, channel, and free-text search across name/email/phone.",
+    "Use to list contacts (prospects, tenants, etc.). Supports filtering by lifecycle status, channel, and free-text search across name/email/phone. Each contact includes an `appliedAt` timestamp (ISO 8601, nullable) that is auto-set when status transitions to applicant.",
     {
       page: z.number().optional().describe("Page number for pagination"),
       limit: z.number().optional().describe("Results per page"),
@@ -26,7 +26,7 @@ export function registerContactTools(server: McpServer, api: ApiClient) {
 
   server.tool(
     "get_contact",
-    "Use to get full details for a specific contact by ID.",
+    "Use to get full details for a specific contact by ID. Response includes `appliedAt` (ISO 8601 timestamp, nullable) — auto-set when status transitions to applicant, cleared on other transitions.",
     {
       contactId: z.string().uuid().describe("The contact UUID"),
     },

@@ -16,6 +16,7 @@ import { registerWebhookTools } from "./tools/webhooks.js";
 import { registerSettingsTools } from "./tools/settings.js";
 import { registerPropertyImageTools } from "./tools/property-images.js";
 import { registerSessionTools } from "./tools/sessions.js";
+import { registerBulkImportTools } from "./tools/bulk-import.js";
 import { registerApiDocsResource } from "./resources/api-docs.js";
 
 const apiKey = process.env.RENTALOT_API_KEY;
@@ -48,6 +49,7 @@ registerWebhookTools(server, api);
 registerSettingsTools(server, api);
 registerPropertyImageTools(server, api);
 registerSessionTools(server, api);
+registerBulkImportTools(server, api);
 
 // Register resources
 registerApiDocsResource(server);

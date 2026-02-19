@@ -86,4 +86,68 @@ export function registerPropertyImageTools(server: McpServer, api: ApiClient) {
       return { content: [{ type: "text" as const, text: JSON.stringify(res.data, null, 2) }] };
     }
   );
+
+  server.tool(
+    "presign_image_batch",
+    "Use to get presigned URLs for uploading up to 20 property images at once. Returns an upload URL and R2 key for each image. Write operation — requires Pro tier or higher.",
+    {
+      propertyId: z.string().uuid().describe("The property UUID"),
+      images: z
+        .array(
+          z.object({
+            fileName: z.string().describe("Original file name (e.g. kitchen.jpg)"),
+            contentType: z.string().describe("MIME type (e.g. image/jpeg, image/png)"),
+            sizeBytes: z.number().int().describe("File size in bytes"),
+          })
+        )
+        .min(1)
+        .max(20)
+        .describe("Array of image metadata objects (max 20)"),
+    },
+    async ({ propertyId, images }) => {
+      const res = await api.post(`/api/v1/properties/${propertyId}/images/presign-batch`, { images });
+      if (res.error) {
+        return { content: [{ type: "text" as const, text: `Error: ${res.error.message}` }], isError: true };
+      }
+      return { content: [{ type: "text" as const, text: JSON.stringify(res.data, null, 2) }] };
+    }
+  );
+
+  server.tool(
+    "confirm_image_batch",
+    "Use to confirm multiple property image uploads after files have been uploaded to their presigned URLs. Creates image records for all confirmed uploads. Supports Idempotency-Key header. Write operation — requires Pro tier or higher.",
+    {
+      propertyId: z.string().uuid().describe("The property UUID"),
+      images: z
+        .array(
+          z.object({
+            r2Key: z.string().describe("The R2 storage key returned from presign_image_batch"),
+            contentType: z.string().describe("MIME type of the uploaded file"),
+            sizeBytes: z.number().int().describe("File size in bytes"),
+            altText: z.string().max(500).optional().describe("Alt text for accessibility"),
+          })
+        )
+        .min(1)
+        .max(20)
+        .describe("Array of uploaded image metadata objects (max 20)"),
+      idempotencyKey: z
+        .string()
+        .optional()
+        .describe("Optional idempotency key to prevent duplicate confirmations"),
+    },
+    async ({ propertyId, images, idempotencyKey }) => {
+      const headers: Record<string, string> = {};
+      if (idempotencyKey) headers["Idempotency-Key"] = idempotencyKey;
+
+      const res = await api.post(
+        `/api/v1/properties/${propertyId}/images/confirm-batch`,
+        { images },
+        headers
+      );
+      if (res.error) {
+        return { content: [{ type: "text" as const, text: `Error: ${res.error.message}` }], isError: true };
+      }
+      return { content: [{ type: "text" as const, text: JSON.stringify(res.data, null, 2) }] };
+    }
+  );
 }
