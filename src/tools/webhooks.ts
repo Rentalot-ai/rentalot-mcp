@@ -11,6 +11,10 @@ const WEBHOOK_EVENTS = [
   "contact.updated",
   "property.updated",
   "workflow.completed",
+  "workflow.created",
+  "workflow.updated",
+  "workflow.deleted",
+  "bulk_import.completed",
 ] as const;
 
 export function registerWebhookTools(server: McpServer, api: ApiClient) {

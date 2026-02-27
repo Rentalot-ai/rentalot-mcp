@@ -63,6 +63,20 @@
 - [x] `bulk_create_properties` — `POST /api/v1/properties/bulk` (body: `{ properties: Record<string, unknown>[] }`, max 500). Flexible field names (Zillow/AppFolio aliases auto-normalized). Returns `202 { data: { jobId, status, total } }`. Supports `Idempotency-Key`. Requires Pro+.
 - [x] `get_bulk_import_job` — `GET /api/v1/properties/bulk/{jobId}` (returns `{ jobId, status, total, created, failed, createdPropertyIds, unmappedFields, errors[], createdAt, completedAt }`)
 
+### Workflow write tools (new — 3 tools)
+
+- [x] `create_workflow` — `POST /api/v1/workflows` (body: `{ name, steps[], triggerType, description?, triggerConfig?, exitConditions?, questionConfig?, completionConfig?, isPublic?, introMessage?, voiceConfig?, isActive? }`). Slug auto-generated from name. Returns `201 { data: WorkflowTemplateFull }`. Supports `Idempotency-Key`. Requires Pro+.
+- [x] `update_workflow` — `PATCH /api/v1/workflows/{id}` (body: all fields optional, same as create). Execution-field changes auto-create version snapshot. Returns `200 { data: WorkflowTemplateFull }`. Requires Pro+.
+- [x] `delete_workflow` — `DELETE /api/v1/workflows/{id}` (fails with 409 if active runs exist). Returns `204`. Requires Pro+.
+
+### Webhook event types update
+
+- [x] Add `workflow.created`, `workflow.updated`, `workflow.deleted`, `bulk_import.completed` to `WEBHOOK_EVENTS` array in `src/tools/webhooks.ts`. These are now accepted by the v1 API in `create_webhook` and `update_webhook` `events` field.
+
+### Workflow GET response shape change
+
+- [x] `list_workflows` and `get_workflow` now return full template detail (steps, triggerConfig, exitConditions, questionConfig, completionConfig, introMessage, voiceConfig, currentVersion, updatedAt). No MCP code change needed (passthrough), but update tool descriptions to mention that full config is included in the response.
+
 ### Batch image tools (new — 2 tools)
 
 - [x] `presign_image_batch` — `POST /api/v1/properties/{id}/images/presign-batch` (body: `{ images: [{ fileName, contentType, sizeBytes }] }`, max 20). Returns `{ data: [{ fileName, uploadUrl, r2Key }] }`.
@@ -70,12 +84,16 @@
 
 ### Image import by URL tools (new — 2 tools)
 
-- [ ] `import_property_images` — `POST /api/v1/properties/{id}/images/import` (body: `{ urls: string[] }`, max 20). Server downloads from URLs (SSRF-protected), uploads to R2 asynchronously via Inngest. Supports `Idempotency-Key`. Returns `202 { data: { jobId, status: "pending", totalUrls } }`. Requires Pro+.
-- [ ] `get_image_import_job` — `GET /api/v1/properties/{id}/images/import/{jobId}` (returns `{ jobId, status, totalUrls, imported, failed, totalBytes, errors[], createdAt, completedAt }`). Note: `imageImportJobIds` also returned in `get_bulk_import_job` response for bulk imports that included image URLs.
+- [x] `import_property_images` — `POST /api/v1/properties/{id}/images/import` (body: `{ urls: string[] }`, max 20). Server downloads from URLs (SSRF-protected), uploads to R2 asynchronously via Inngest. Supports `Idempotency-Key`. Returns `202 { data: { jobId, status: "pending", totalUrls } }`. Requires Pro+.
+- [x] `get_image_import_job` — `GET /api/v1/properties/{id}/images/import/{jobId}` (returns `{ jobId, status, totalUrls, imported, failed, totalBytes, errors[], createdAt, completedAt }`). Note: `imageImportJobIds` also returned in `get_bulk_import_job` response for bulk imports that included image URLs.
 
 ### Contact type update
 
 - [x] Add `appliedAt` (ISO 8601 timestamp, nullable) to contact type — v1 API GET now returns it. Auto-set when status → `applicant`, cleared on other transitions. `notes` field was also added but is stripped from the public API.
+
+### Settings schema update
+
+- [x] `get_settings` / `update_settings` — response now includes 3 new agent pref fields: `showingCalendarId` (string|null), `showingBufferMinutes` (15|30|60), `maxShowingsPerDay` (1-20). `emailPreferences` now includes: `newInquiryNotifications`, `showingBookedNotifications`, `followupDueNotifications` (all boolean). Update tool descriptions and parameter schemas to match.
 
 ## Future
 

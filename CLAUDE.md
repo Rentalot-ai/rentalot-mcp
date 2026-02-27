@@ -12,9 +12,9 @@ MCP server exposing the Rentalot REST API (37 tools) for AI assistants.
 ## Dev Setup
 
 ```bash
-npm run build        # compile TypeScript → dist/
-npm run dev          # run with tsx (hot reload)
-npm start            # run compiled dist/index.js
+bun run build        # compile TypeScript → dist/
+bun run dev          # run with --watch (hot reload)
+bun start            # run compiled dist/index.js
 ```
 
 Requires env vars:
