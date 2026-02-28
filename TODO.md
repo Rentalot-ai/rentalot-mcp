@@ -95,6 +95,21 @@
 
 - [x] `get_settings` / `update_settings` — response now includes 3 new agent pref fields: `showingCalendarId` (string|null), `showingBufferMinutes` (15|30|60), `maxShowingsPerDay` (1-20). `emailPreferences` now includes: `newInquiryNotifications`, `showingBookedNotifications`, `followupDueNotifications` (all boolean). Update tool descriptions and parameter schemas to match.
 
+### RFC 9457 error format migration
+
+- [x] All v1 API error responses changed from `{ error: { code, message } }` to RFC 9457 Problem Details: `{ type, title, status, detail, errors? }`. Content-Type is now `application/problem+json`. `api-client.ts` now handles both legacy and RFC 9457 error shapes.
+
+### New endpoint: webhook secret rotation
+
+- [x] `rotate_webhook_secret` — `POST /api/v1/webhooks/{id}/rotate-secret`. Generates a new HMAC signing secret. Returns `{ data: { webhookId, secret } }`. Requires Pro+.
+
+### Response shape changes
+
+- [x] DELETE endpoints now return `204` idempotently (no error on already-deleted resources). Already handled — `api-client.ts` returns `{ status }` on 204, and DELETE tools return success messages.
+- [x] POST create endpoints now return `Location` header with the resource URL. Informational only — no MCP change needed.
+- [x] `list_conversation_messages` now returns full `pagination` object (`{ page, limit, total, totalPages }`) instead of just `{ page, limit }`. Updated tool description.
+- [x] `search_conversations` response changed from `{ data, total }` to `{ data, pagination: { page, limit, total, totalPages } }`. Added `page` param and updated description.
+
 ## Future
 
 - [ ] Remote MCP server — Streamable HTTP transport at `mcp.rentalot.ai/mcp` with OAuth 2.1

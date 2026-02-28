@@ -71,10 +71,11 @@ export class ApiClient {
     const json = await res.json().catch(() => null);
 
     if (!res.ok) {
-      return {
-        status,
-        error: json?.error ?? { code: "unknown", message: `HTTP ${status}` },
-      };
+      // Support both legacy { error: { code, message } } and RFC 9457 { type, title, status, detail }
+      const error = json?.error
+        ?? (json?.detail ? { code: json.type ?? "problem", message: json.detail } : null)
+        ?? { code: "unknown", message: `HTTP ${status}` };
+      return { status, error };
     }
 
     return { status, data: json as T };

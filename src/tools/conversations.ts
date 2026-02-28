@@ -38,10 +38,11 @@ export function registerConversationTools(server: McpServer, api: ApiClient) {
 
   server.tool(
     "search_conversations",
-    "Use to search conversations by keyword. Returns conversations matching the query across message content. Read-only.",
+    "Use to search conversations by keyword. Returns conversations matching the query across message content. Response includes full pagination object (page, limit, total, totalPages). Read-only.",
     {
       query: z.string().max(200).describe("Search query to match against conversation content"),
-      limit: z.number().optional().describe("Maximum number of results to return"),
+      page: z.number().optional().describe("Page number for pagination"),
+      limit: z.number().optional().describe("Maximum number of results per page"),
     },
     async (args) => {
       const res = await api.get("/api/v1/conversations/search", args);
@@ -54,7 +55,7 @@ export function registerConversationTools(server: McpServer, api: ApiClient) {
 
   server.tool(
     "list_conversation_messages",
-    "Use to list messages in a conversation. Returns paginated messages with direction (inbound/outbound), content, channel, and timestamp. Read-only.",
+    "Use to list messages in a conversation. Returns paginated messages with direction (inbound/outbound), content, channel, and timestamp. Response includes full pagination object (page, limit, total, totalPages). Read-only.",
     {
       conversationId: z.string().uuid().describe("The conversation ID"),
       page: z.number().optional().describe("Page number for pagination"),

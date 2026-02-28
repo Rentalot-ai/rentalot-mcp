@@ -103,7 +103,7 @@ export function registerWebhookTools(server: McpServer, api: ApiClient) {
       if (res.error) {
         return { content: [{ type: "text" as const, text: `Error: ${res.error.message}` }], isError: true };
       }
-      return { content: [{ type: "text" as const, text: JSON.stringify(res.data, null, 2) }] };
+      return { content: [{ type: "text" as const, text: "Webhook deleted successfully." }] };
     }
   );
 
@@ -115,6 +115,21 @@ export function registerWebhookTools(server: McpServer, api: ApiClient) {
     },
     async ({ webhookId }) => {
       const res = await api.post(`/api/v1/webhooks/${webhookId}/test`);
+      if (res.error) {
+        return { content: [{ type: "text" as const, text: `Error: ${res.error.message}` }], isError: true };
+      }
+      return { content: [{ type: "text" as const, text: JSON.stringify(res.data, null, 2) }] };
+    }
+  );
+
+  server.tool(
+    "rotate_webhook_secret",
+    "Use to rotate the HMAC signing secret for a webhook subscription. The new secret is returned once and must be stored immediately — it cannot be retrieved again. Write operation — requires Pro tier or higher.",
+    {
+      webhookId: z.string().uuid().describe("Webhook subscription ID"),
+    },
+    async ({ webhookId }) => {
+      const res = await api.post(`/api/v1/webhooks/${webhookId}/rotate-secret`);
       if (res.error) {
         return { content: [{ type: "text" as const, text: `Error: ${res.error.message}` }], isError: true };
       }
