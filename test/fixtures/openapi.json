@@ -747,6 +747,10 @@
             "type": "string",
             "maxLength": 200
           },
+          "language": {
+            "type": "string",
+            "maxLength": 10
+          },
           "notes": {
             "type": "string",
             "nullable": true,
@@ -2094,6 +2098,11 @@
           "referralSource": {
             "type": "string",
             "maxLength": 200
+          },
+          "language": {
+            "type": "string",
+            "maxLength": 10,
+            "default": "en"
           }
         },
         "required": [

@@ -110,6 +110,10 @@
 - [x] `list_conversation_messages` now returns full `pagination` object (`{ page, limit, total, totalPages }`) instead of just `{ page, limit }`. Updated tool description.
 - [x] `search_conversations` response changed from `{ data, total }` to `{ data, pagination: { page, limit, total, totalPages } }`. Added `page` param and updated description.
 
+### Contact `language` field
+
+- [ ] Add `language` (string, default `"en"`) to `create_contact` and `update_contact` tool parameter schemas. v1 API now accepts it on both POST and PATCH. GET responses also include it.
+
 ## Future
 
 - [ ] Remote MCP server — Streamable HTTP transport at `mcp.rentalot.ai/mcp` with OAuth 2.1
