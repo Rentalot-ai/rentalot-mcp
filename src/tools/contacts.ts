@@ -3,15 +3,17 @@ import { z } from "zod";
 import { ApiClient } from "../api-client.js";
 
 const CONTACT_STATUS_ENUM = ["prospect", "scheduled", "applicant", "renter", "archived"] as const;
+const CONTACT_ROLE_ENUM = ["prospect", "tenant", "landlord", "property_manager", "vendor", "other"] as const;
 
 export function registerContactTools(server: McpServer, api: ApiClient) {
   server.tool(
     "list_contacts",
-    "Use to list contacts (prospects, tenants, etc.). Supports filtering by lifecycle status, channel, and free-text search across name/email/phone. Each contact includes an `appliedAt` timestamp (ISO 8601, nullable) that is auto-set when status transitions to applicant.",
+    "Use to list contacts (prospects, tenants, etc.). Supports filtering by lifecycle status, role, channel, and free-text search across name/email/phone. Each contact includes `appliedAt` (ISO 8601, nullable) auto-set when status → applicant, and `language` (ISO 639-1, default \"en\").",
     {
       page: z.number().optional().describe("Page number for pagination"),
       limit: z.number().optional().describe("Results per page"),
       status: z.enum(CONTACT_STATUS_ENUM).optional().describe("Filter by contact lifecycle status"),
+      role: z.enum(CONTACT_ROLE_ENUM).optional().describe("Filter by contact role"),
       channel: z.string().optional().describe("Filter by communication channel"),
       search: z.string().max(200).optional().describe("Free-text search across name, email, and phone"),
     },
@@ -48,8 +50,11 @@ export function registerContactTools(server: McpServer, api: ApiClient) {
       email: z.string().email().optional().describe("Contact's email address"),
       phone: z.string().optional().describe("Contact's phone number"),
       status: z.enum(CONTACT_STATUS_ENUM).optional().describe("Contact lifecycle status"),
+      role: z.enum(CONTACT_ROLE_ENUM).optional().describe("Contact role (default: prospect)"),
       channelPreference: z.string().optional().describe("Preferred communication channel"),
       source: z.string().optional().describe("Lead source"),
+      referralSource: z.string().optional().describe("Who referred this contact"),
+      language: z.string().optional().describe("Contact's preferred language (ISO 639-1 code, default: \"en\")"),
     },
     async ({ contactId, ...body }) => {
       const res = await api.patch(`/api/v1/contacts/${contactId}`, body);
@@ -68,9 +73,11 @@ export function registerContactTools(server: McpServer, api: ApiClient) {
       email: z.string().email().optional().describe("Contact's email address"),
       phone: z.string().optional().describe("Contact's phone number"),
       status: z.enum(CONTACT_STATUS_ENUM).optional().describe("Contact lifecycle status (default: prospect)"),
+      role: z.enum(CONTACT_ROLE_ENUM).optional().describe("Contact role (default: prospect)"),
       channelPreference: z.string().optional().describe("Preferred communication channel"),
       source: z.string().optional().describe("Lead source (e.g. zillow, website, referral)"),
       referralSource: z.string().optional().describe("Who referred this contact"),
+      language: z.string().optional().describe("Contact's preferred language (ISO 639-1 code, default: \"en\")"),
     },
     async (args) => {
       const res = await api.post("/api/v1/contacts", args);

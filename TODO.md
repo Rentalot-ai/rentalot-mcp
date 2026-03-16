@@ -112,7 +112,13 @@
 
 ### Contact `language` field
 
-- [ ] Add `language` (string, default `"en"`) to `create_contact` and `update_contact` tool parameter schemas. v1 API now accepts it on both POST and PATCH. GET responses also include it.
+- [x] Add `language` (string, default `"en"`) to `create_contact` and `update_contact` tool parameter schemas. v1 API now accepts it on both POST and PATCH. GET responses also include it.
+
+### Contact `role` field (v0.6.0)
+
+- [x] Add `role` enum (`prospect`, `tenant`, `landlord`, `property_manager`, `vendor`, `other`) to `create_contact` and `update_contact` parameter schemas.
+- [x] Add `role` filter param to `list_contacts`.
+- [x] Add missing `referralSource` to `update_contact` parameter schema (was only on `create_contact`).
 
 ## Future
 
