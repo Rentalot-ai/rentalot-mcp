@@ -7,7 +7,7 @@
 
 - [x] Add `LICENSE` file (MIT)
 - [x] Local dev test: add to rentalot repo `.mcp.json` with stdio pointing at built `dist/index.js`, `RENTALOT_BASE_URL=http://localhost:3000`, test tools from Claude Code against `make dev`
-- [x] Test all 37 tools end-to-end against live dev API (35 pass, 2 known: `get_conversation` route missing, `send_message` needs channel adapter)
+- [x] Test all 37 tools end-to-end against live dev API (35 pass, 1 known: `send_message` needs channel adapter)
 
 ## CI/CD
 

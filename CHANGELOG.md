@@ -26,6 +26,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Session enum drift: status filter now accepts 'draft' (was 'cancelled'), reviewStatus accepts 'pending_review' (was 'pending')
 - Removed invalid 'status' filter from list_properties (not supported by API)
 - CI test job now uses vitest instead of bun test runner
+- Fix schema drift test — align path param names ({id} not {propertyId}) and regenerate OpenAPI fixture with 8 previously missing endpoints
 
 ## [0.1.0] - 2026-03-25
 
