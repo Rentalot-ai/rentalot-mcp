@@ -130,7 +130,7 @@ api_key: ra_your_key
 
 ### AI Agent Skill
 
-This project ships a [SKILL.md](.skills/default/SKILL.md) following the [Agent Skills open standard](https://agentskills.io). Install it so your coding agent knows all 37 tools, common workflows, and API patterns.
+This project ships a [SKILL.md](.skills/default/SKILL.md) following the [Agent Skills open standard](https://agentskills.io). Install it so your coding agent knows all 65 tools, common workflows, and API patterns.
 
 **Quick install with [`skills`](https://skills.sh) CLI** (by Vercel Labs):
 
@@ -183,20 +183,24 @@ ln -s "$(pwd)/skills/rentalot" ~/.claude/skills/rentalot
 
 Then invoke with `/rentalot` in any Claude Code session.
 
-## Tools (37)
+## Tools (65)
 
 | Resource | Tools | Access |
 |----------|-------|--------|
-| Properties | `list_properties`, `get_property`, `create_property`, `update_property`, `delete_property` | Read: Starter+ / Write: Pro+ |
-| Contacts | `list_contacts`, `get_contact`, `update_contact` | Read: Starter+ / Write: Pro+ |
-| Showings | `list_showings`, `get_showing`, `create_showing`, `update_showing`, `delete_showing` | Read: Starter+ / Write: Pro+ |
-| Events | `list_events` | Read: Starter+ |
-| Conversations | `list_conversations`, `get_conversation`, `list_conversation_messages` | Read: Starter+ |
-| Messages | `send_message` | Write: Pro+ |
-| Drafts | `list_drafts`, `get_draft`, `create_draft`, `update_draft`, `send_draft`, `delete_draft` | Read: Starter+ / Write: Pro+ |
-| Follow-ups | `list_followups`, `get_followup`, `create_followup`, `delete_followup` | Read: Starter+ / Write: Pro+ |
-| Workflows | `list_workflows`, `get_workflow`, `trigger_workflow_run`, `list_workflow_runs`, `get_workflow_run` | Read: Starter+ / Write: Pro+ |
-| Webhooks | `list_webhooks`, `create_webhook`, `delete_webhook`, `test_webhook` | Pro+ |
+| Properties (5) | `list_properties`, `get_property`, `create_property`, `update_property`, `delete_property` | Read: Starter+ / Write: Pro+ |
+| Contacts (5) | `list_contacts`, `get_contact`, `create_contact`, `update_contact`, `delete_contact` | Read: Starter+ / Write: Pro+ |
+| Showings (6) | `list_showings`, `get_showing`, `create_showing`, `update_showing`, `delete_showing`, `check_showing_availability` | Read: Starter+ / Write: Pro+ |
+| Events (1) | `list_events` | Read: Starter+ |
+| Conversations (4) | `list_conversations`, `get_conversation`, `search_conversations`, `list_conversation_messages` | Read: Starter+ |
+| Messages (1) | `send_message` | Write: Pro+ |
+| Drafts (6) | `list_drafts`, `get_draft`, `create_draft`, `update_draft`, `send_draft`, `delete_draft` | Read: Starter+ / Write: Pro+ |
+| Follow-ups (4) | `list_followups`, `get_followup`, `create_followup`, `delete_followup` | Read: Starter+ / Write: Pro+ |
+| Workflows (8) | `list_workflows`, `get_workflow`, `create_workflow`, `update_workflow`, `delete_workflow`, `trigger_workflow_run`, `list_workflow_runs`, `get_workflow_run` | Read: Starter+ / Write: Pro+ |
+| Webhooks (7) | `list_webhooks`, `create_webhook`, `get_webhook`, `update_webhook`, `delete_webhook`, `test_webhook`, `rotate_webhook_secret` | Pro+ |
+| Settings (4) | `get_settings`, `update_settings`, `get_followup_settings`, `update_followup_settings` | Read: Starter+ / Write: Pro+ |
+| Property Images (9) | `list_property_images`, `presign_image_upload`, `confirm_image_upload`, `delete_property_images`, `reorder_property_images`, `presign_image_batch`, `confirm_image_batch`, `import_property_images`, `get_image_import_job` | Read: Starter+ / Write: Pro+ |
+| Sessions (3) | `list_sessions`, `get_session`, `review_session` | Read: Starter+ / Write: Pro+ |
+| Bulk Import (2) | `bulk_create_properties`, `get_bulk_import_job` | Pro+ |
 
 ## Resources
 
@@ -210,7 +214,7 @@ bun run build      # Compile TypeScript
 bun run dev        # Run with --watch (hot reload)
 bun run lint       # ESLint
 bun run typecheck  # tsc --noEmit
-bun run test:e2e   # E2E test all 37 tools against local dev server
+bun run test:e2e   # E2E test all 65 tools against local dev server
 ```
 
 ## License

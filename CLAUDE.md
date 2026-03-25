@@ -1,6 +1,6 @@
 # @rentalot/mcp-server
 
-MCP server exposing the Rentalot REST API (37 tools) for AI assistants.
+MCP server exposing the Rentalot REST API (65 tools) for AI assistants.
 
 ## Project Status
 

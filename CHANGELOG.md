@@ -9,11 +9,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 
 - Add role and language fields to contact schemas
+- Draft tools now support 'subject' field for email drafts on create_draft, update_draft, and send_draft
+- Property tools: 13 new fields on create/update (amenities, leaseMinMonths, depositAmount, squareFootage, etc.) and 4 new list filters (minBathrooms, availableBefore, petFriendly, hasParking)
+- Settings tool: full coverage of all agent preferences (28 fields) and email notification preferences (10 fields)
 
 ### Changed
 
 - Migrate API error responses to RFC 9457 format
 - Add webhook secret rotation endpoint
+
+### Fixed
+
+- Session enum drift: status filter now accepts 'draft' (was 'cancelled'), reviewStatus accepts 'pending_review' (was 'pending')
+- Removed invalid 'status' filter from list_properties (not supported by API)
 
 ## [0.1.0] - 2026-03-25
 
