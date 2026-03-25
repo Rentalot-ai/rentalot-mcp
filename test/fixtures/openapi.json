@@ -205,8 +205,6 @@
               "active",
               "rented",
               "inactive",
-              "maintenance",
-              "draft",
               "archived"
             ],
             "description": "Current property status. 'active' = listed and visible to prospects."
@@ -353,8 +351,6 @@
               "active",
               "rented",
               "inactive",
-              "maintenance",
-              "draft",
               "archived"
             ],
             "default": "active"
@@ -518,8 +514,6 @@
               "active",
               "rented",
               "inactive",
-              "maintenance",
-              "draft",
               "archived"
             ]
           },

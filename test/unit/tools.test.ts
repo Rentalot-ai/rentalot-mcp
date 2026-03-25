@@ -188,4 +188,138 @@ describe("Tool behavior — domain-specific", () => {
       { "Idempotency-Key": "idem-456" },
     );
   });
+
+  it("create_draft passes subject to API", async () => {
+    vi.mocked(api.post).mockResolvedValue({ status: 201, data: { id: "draft-1" } });
+
+    await callTool("create_draft", {
+      contactId: "550e8400-e29b-41d4-a716-446655440000",
+      channel: "email",
+      body: "Hello",
+      subject: "Meeting tomorrow",
+    });
+
+    expect(api.post).toHaveBeenCalledWith("/api/v1/drafts", {
+      contactId: "550e8400-e29b-41d4-a716-446655440000",
+      channel: "email",
+      body: "Hello",
+      subject: "Meeting tomorrow",
+    });
+  });
+
+  it("send_draft passes subject/body overrides to API", async () => {
+    vi.mocked(api.post).mockResolvedValue({ status: 200, data: { id: "draft-1", status: "sent" } });
+
+    await callTool("send_draft", {
+      draftId: "550e8400-e29b-41d4-a716-446655440000",
+      subject: "New subject",
+      body: "New body",
+    });
+
+    expect(api.post).toHaveBeenCalledWith(
+      "/api/v1/drafts/550e8400-e29b-41d4-a716-446655440000/send",
+      { subject: "New subject", body: "New body" },
+    );
+  });
+
+  it("send_draft without overrides sends no body", async () => {
+    vi.mocked(api.post).mockResolvedValue({ status: 200, data: { id: "draft-1", status: "sent" } });
+
+    await callTool("send_draft", {
+      draftId: "550e8400-e29b-41d4-a716-446655440000",
+    });
+
+    expect(api.post).toHaveBeenCalledWith(
+      "/api/v1/drafts/550e8400-e29b-41d4-a716-446655440000/send",
+      undefined,
+    );
+  });
+
+  it("update_settings passes agent preferences to API", async () => {
+    vi.mocked(api.patch).mockResolvedValue({ status: 200, data: { agentName: "Rentalot" } });
+
+    await callTool("update_settings", {
+      agentName: "Rentalot",
+      timezone: "America/New_York",
+      followupEnabled: true,
+      followupIdleHours: 48,
+    });
+
+    expect(api.patch).toHaveBeenCalledWith("/api/v1/settings", {
+      agentName: "Rentalot",
+      timezone: "America/New_York",
+      followupEnabled: true,
+      followupIdleHours: 48,
+    });
+  });
+
+  it("update_settings passes full email preferences to API", async () => {
+    vi.mocked(api.patch).mockResolvedValue({ status: 200, data: {} });
+
+    await callTool("update_settings", {
+      emailPreferences: {
+        marketing: false,
+        emailAutoSend: true,
+        emailDailySendLimit: 50,
+      },
+    });
+
+    expect(api.patch).toHaveBeenCalledWith("/api/v1/settings", {
+      emailPreferences: {
+        marketing: false,
+        emailAutoSend: true,
+        emailDailySendLimit: 50,
+      },
+    });
+  });
+
+  it("list_properties passes new filter params to API", async () => {
+    vi.mocked(api.get).mockResolvedValue({ status: 200, data: [] });
+
+    await callTool("list_properties", {
+      minBathrooms: 2,
+      availableBefore: "2026-04-01",
+      petFriendly: true,
+      hasParking: true,
+    });
+
+    expect(api.get).toHaveBeenCalledWith("/api/v1/properties", {
+      minBathrooms: 2,
+      availableBefore: "2026-04-01",
+      petFriendly: true,
+      hasParking: true,
+    });
+  });
+
+  it("create_property passes enriched fields to API", async () => {
+    vi.mocked(api.post).mockResolvedValue({ status: 201, data: { id: "p-1" } });
+
+    await callTool("create_property", {
+      address: "100 Oak St",
+      monthlyRent: 2500,
+      bedrooms: 2,
+      bathrooms: 1,
+      amenities: ["pool", "gym"],
+      leaseMinMonths: 6,
+      leaseMaxMonths: 12,
+      depositAmount: 5000,
+      squareFootage: 1200,
+      yearBuilt: 2020,
+      isPublic: true,
+    });
+
+    expect(api.post).toHaveBeenCalledWith("/api/v1/properties", {
+      address: "100 Oak St",
+      monthlyRent: 2500,
+      bedrooms: 2,
+      bathrooms: 1,
+      amenities: ["pool", "gym"],
+      leaseMinMonths: 6,
+      leaseMaxMonths: 12,
+      depositAmount: 5000,
+      squareFootage: 1200,
+      yearBuilt: 2020,
+      isPublic: true,
+    });
+  });
 });

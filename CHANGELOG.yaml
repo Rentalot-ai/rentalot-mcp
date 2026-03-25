@@ -1,0 +1,23 @@
+project: '@rentalot/mcp-server'
+versions:
+    unreleased:
+        added:
+            - Add role and language fields to contact schemas
+        changed:
+            - Migrate API error responses to RFC 9457 format
+            - Add webhook secret rotation endpoint
+    0.1.0:
+        date: "2026-03-25"
+        added:
+            - Initial MCP server exposing 37 Rentalot API tools
+            - Property, contact, showing, conversation, and session management tools
+            - Property image management (list, upload, confirm, delete, reorder)
+            - Property image import from external URLs
+            - Settings and webhook subscription tools
+            - Showing availability check
+            - Conversation keyword search
+            - Workflow CRUD tools
+            - MCP resource with full API reference documentation
+        changed:
+            - Migrate project to Bun for improved performance
+            - Add GitLab CI for lint, typecheck, build, and test

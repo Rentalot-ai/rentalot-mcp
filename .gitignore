@@ -2,3 +2,8 @@ node_modules/
 dist/
 package-lock.json
 .claude/
+
+# Dolt database files (added by bd init)
+.dolt/
+*.db
+.beads/

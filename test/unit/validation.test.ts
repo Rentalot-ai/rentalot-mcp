@@ -60,7 +60,7 @@ describe("Input validation — invalid UUID", () => {
 });
 
 describe("Input validation — invalid enum values", () => {
-  it("list_properties with invalid status rejects", async () => {
+  it("list_properties rejects unknown params like status", async () => {
     const result = await callTool("list_properties", { status: "imaginary" });
     expect(result.isError).toBe(true);
   });
@@ -80,6 +80,18 @@ describe("Input validation — invalid enum values", () => {
       url: "https://example.com/hook",
       events: ["not.a.real.event"],
     });
+    expect(result.isError).toBe(true);
+  });
+});
+
+describe("Input validation — session enum values", () => {
+  it("list_sessions rejects 'cancelled' as status (API uses 'draft')", async () => {
+    const result = await callTool("list_sessions", { status: "cancelled" });
+    expect(result.isError).toBe(true);
+  });
+
+  it("list_sessions rejects 'pending' as reviewStatus (API uses 'pending_review')", async () => {
+    const result = await callTool("list_sessions", { status: "pending" });
     expect(result.isError).toBe(true);
   });
 });

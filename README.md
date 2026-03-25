@@ -128,58 +128,60 @@ api_key: ra_your_key
 
 **Resolution order:** `RENTALOT_API_KEY` env var > `api_key` in config file
 
-## Skills
+### AI Agent Skill
 
-This repo ships agent skills in `skills/` that give coding agents deep knowledge of Rentalot's API, tool surface, and common workflows — so the agent can work with Rentalot without constantly re-reading docs.
+This project ships a [SKILL.md](.skills/default/SKILL.md) following the [Agent Skills open standard](https://agentskills.io). Install it so your coding agent knows all 37 tools, common workflows, and API patterns.
 
-### Claude Code
+**Quick install with [`skills`](https://skills.sh) CLI** (by Vercel Labs):
 
-Symlink into your global skills directory:
+```bash
+npx skills add ariel-frischer/rentalot-mcp
+```
+
+<details>
+<summary><strong>Manual install</strong></summary>
+
+**Claude Code** — Skills live in `~/.claude/skills/` (global) or `.claude/skills/` (project-local).
+
+```bash
+# Global — available in all projects
+mkdir -p ~/.claude/skills/rentalot-mcp
+curl -fsSL https://raw.githubusercontent.com/ariel-frischer/rentalot-mcp/main/.skills/default/SKILL.md \
+  -o ~/.claude/skills/rentalot-mcp/SKILL.md
+
+# Project-local — checked into this repo only
+mkdir -p .claude/skills/rentalot-mcp
+curl -fsSL https://raw.githubusercontent.com/ariel-frischer/rentalot-mcp/main/.skills/default/SKILL.md \
+  -o .claude/skills/rentalot-mcp/SKILL.md
+```
+
+**Codex CLI** — reads skills from `~/.codex/skills/` (global) or `.codex/skills/` (project-local).
+
+```bash
+# Global
+mkdir -p ~/.codex/skills/rentalot-mcp
+curl -fsSL https://raw.githubusercontent.com/ariel-frischer/rentalot-mcp/main/.skills/default/SKILL.md \
+  -o ~/.codex/skills/rentalot-mcp/SKILL.md
+
+# Project-local
+mkdir -p .codex/skills/rentalot-mcp
+curl -fsSL https://raw.githubusercontent.com/ariel-frischer/rentalot-mcp/main/.skills/default/SKILL.md \
+  -o .codex/skills/rentalot-mcp/SKILL.md
+```
+
+Or pass directly: `codex --instructions .skills/default/SKILL.md`
+
+</details>
+
+### Detailed API Skill
+
+For deeper API reference (full field lists, status enums, webhook events), there's also a comprehensive skill at `skills/rentalot/SKILL.md`. Symlink it for Claude Code:
 
 ```bash
 ln -s "$(pwd)/skills/rentalot" ~/.claude/skills/rentalot
 ```
 
-Or into a project-local `.claude/skills/` if you prefer per-project:
-
-```bash
-mkdir -p .claude/skills
-ln -s "$(pwd)/skills/rentalot" .claude/skills/rentalot
-```
-
 Then invoke with `/rentalot` in any Claude Code session.
-
-### Codex (OpenAI)
-
-Copy the skill content into your Codex instructions file:
-
-```bash
-cat skills/rentalot/SKILL.md >> codex.md
-```
-
-Or reference it in your `AGENTS.md`:
-
-```markdown
-## Rentalot Reference
-See [skills/rentalot/SKILL.md](skills/rentalot/SKILL.md) for full API and tool reference.
-```
-
-### Gemini CLI
-
-Add to your Gemini system instructions (`~/.gemini/GEMINI.md` or project-level):
-
-```markdown
-## Rentalot Reference
-See [skills/rentalot/SKILL.md](skills/rentalot/SKILL.md) for full API and tool reference.
-```
-
-### Generic / Other Agents
-
-The skill file at `skills/rentalot/SKILL.md` is plain markdown with YAML frontmatter. Any agent that supports custom instructions or system prompts can use it:
-
-1. **File reference** — point your agent's instructions config at the skill file
-2. **Inline paste** — copy the content into your agent's system prompt or instructions file
-3. **RAG / knowledge base** — index `skills/rentalot/SKILL.md` as a document
 
 ## Tools (37)
 
@@ -203,12 +205,12 @@ The skill file at `skills/rentalot/SKILL.md` is plain markdown with YAML frontma
 ## Development
 
 ```bash
-npm install
-npm run build      # Compile TypeScript
-npm run dev        # Run with tsx (hot reload)
-npm run lint       # ESLint
-npm run typecheck  # tsc --noEmit
-npm run test:e2e   # E2E test all 37 tools against local dev server
+bun install
+bun run build      # Compile TypeScript
+bun run dev        # Run with --watch (hot reload)
+bun run lint       # ESLint
+bun run typecheck  # tsc --noEmit
+bun run test:e2e   # E2E test all 37 tools against local dev server
 ```
 
 ## License

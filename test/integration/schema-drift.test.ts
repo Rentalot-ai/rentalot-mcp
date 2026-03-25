@@ -62,6 +62,7 @@ const TOOL_ENDPOINT_MAP: Record<string, [string, string]> = {
   update_webhook: ["patch", "/api/v1/webhooks/{webhookId}"],
   delete_webhook: ["delete", "/api/v1/webhooks/{webhookId}"],
   test_webhook: ["post", "/api/v1/webhooks/{webhookId}/test"],
+  rotate_webhook_secret: ["post", "/api/v1/webhooks/{webhookId}/rotate-secret"],
   // Settings
   get_followup_settings: ["get", "/api/v1/settings/followups"],
   update_followup_settings: ["patch", "/api/v1/settings/followups"],

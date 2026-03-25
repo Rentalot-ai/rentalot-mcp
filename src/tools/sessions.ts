@@ -2,8 +2,8 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { ApiClient } from "../api-client.js";
 
-const SESSION_STATUS = ["active", "completed", "expired", "cancelled"] as const;
-const REVIEW_STATUS = ["pending", "approved", "denied"] as const;
+const SESSION_STATUS = ["active", "completed", "expired", "draft"] as const;
+const REVIEW_STATUS = ["pending_review", "approved", "denied"] as const;
 
 export function registerSessionTools(server: McpServer, api: ApiClient) {
   server.tool(

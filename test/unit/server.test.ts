@@ -21,8 +21,8 @@ const EXPECTED_TOOLS = [
   // Workflows (8)
   "list_workflows", "get_workflow", "create_workflow", "update_workflow", "delete_workflow",
   "trigger_workflow_run", "list_workflow_runs", "get_workflow_run",
-  // Webhooks (6)
-  "list_webhooks", "create_webhook", "get_webhook", "update_webhook", "delete_webhook", "test_webhook",
+  // Webhooks (7)
+  "list_webhooks", "create_webhook", "get_webhook", "update_webhook", "delete_webhook", "test_webhook", "rotate_webhook_secret",
   // Settings (4)
   "get_followup_settings", "update_followup_settings", "get_settings", "update_settings",
   // Property Images (9)
@@ -43,7 +43,7 @@ describe("Server registration", () => {
     const names = tools.map((t) => t.name).sort();
 
     expect(names).toEqual(EXPECTED_TOOLS);
-    expect(tools).toHaveLength(64);
+    expect(tools).toHaveLength(65);
   });
 
   it("every tool has a description", async () => {
