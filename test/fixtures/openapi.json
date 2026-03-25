@@ -124,6 +124,11 @@
         "format": "uuid",
         "description": "Webhook subscription UUID"
       },
+      "JobId": {
+        "type": "string",
+        "format": "uuid",
+        "description": "Async job UUID"
+      },
       "SessionId": {
         "type": "string",
         "format": "uuid",
@@ -2289,6 +2294,133 @@
           "imageIds"
         ]
       },
+      "V1PresignImageBatchRequest": {
+        "type": "object",
+        "properties": {
+          "images": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "fileName": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 255
+                },
+                "contentType": {
+                  "type": "string",
+                  "enum": [
+                    "image/jpeg",
+                    "image/png",
+                    "image/webp",
+                    "image/heic"
+                  ]
+                },
+                "sizeBytes": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "exclusiveMinimum": true,
+                  "maximum": 10485760
+                }
+              },
+              "required": [
+                "fileName",
+                "contentType",
+                "sizeBytes"
+              ]
+            },
+            "minItems": 1,
+            "maxItems": 20
+          }
+        },
+        "required": [
+          "images"
+        ]
+      },
+      "V1ConfirmImageBatchRequest": {
+        "type": "object",
+        "properties": {
+          "images": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "r2Key": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 500
+                },
+                "contentType": {
+                  "type": "string",
+                  "enum": [
+                    "image/jpeg",
+                    "image/png",
+                    "image/webp",
+                    "image/heic"
+                  ]
+                },
+                "sizeBytes": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "exclusiveMinimum": true,
+                  "maximum": 10485760
+                },
+                "altText": {
+                  "type": "string",
+                  "maxLength": 500
+                }
+              },
+              "required": [
+                "r2Key",
+                "contentType",
+                "sizeBytes"
+              ]
+            },
+            "minItems": 1,
+            "maxItems": 20
+          }
+        },
+        "required": [
+          "images"
+        ]
+      },
+      "ImportImagesRequest": {
+        "type": "object",
+        "properties": {
+          "urls": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 2048,
+              "format": "uri"
+            },
+            "minItems": 1,
+            "maxItems": 20
+          }
+        },
+        "required": [
+          "urls"
+        ]
+      },
+      "BulkCreatePropertiesRequest": {
+        "type": "object",
+        "properties": {
+          "properties": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": {
+                "nullable": true
+              }
+            },
+            "minItems": 1,
+            "maxItems": 500
+          }
+        },
+        "required": [
+          "properties"
+        ]
+      },
       "Session": {
         "type": "object",
         "properties": {
@@ -2726,6 +2858,14 @@
         },
         "required": true,
         "name": "id",
+        "in": "path"
+      },
+      "JobId": {
+        "schema": {
+          "$ref": "#/components/schemas/JobId"
+        },
+        "required": true,
+        "name": "jobId",
         "in": "path"
       },
       "SessionId": {
@@ -4337,6 +4477,143 @@
           },
           "401": {
             "description": "Missing or invalid API key. Ensure your `Authorization: Bearer ra_...` header is set with a valid, non-revoked API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "description": "Maximum requests allowed per minute for your tier",
+                "schema": {
+                  "type": "integer",
+                  "example": 120
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Requests remaining in the current 60-second window",
+                "schema": {
+                  "type": "integer",
+                  "example": 117
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "Unix epoch timestamp (seconds) when the current window resets",
+                "schema": {
+                  "type": "integer",
+                  "example": 1738800060
+                }
+              },
+              "X-RateLimit-Resource": {
+                "description": "The API resource this request counted against (e.g. 'properties', 'contacts')",
+                "schema": {
+                  "type": "string",
+                  "example": "properties"
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds until the rate limit resets. Wait at least this long before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "example": 12
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/conversations/{id}": {
+      "get": {
+        "operationId": "getConversation",
+        "summary": "Get a conversation",
+        "description": "Use to retrieve details for a specific conversation by ID. Returns the conversation metadata (channel, status, message count). Returns 404 if the conversation does not exist or belongs to a different tenant. Read-only, no side effects.",
+        "tags": [
+          "Conversations"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ConversationId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Conversation details",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "description": "Maximum requests allowed per minute for your tier",
+                "schema": {
+                  "type": "integer",
+                  "example": 120
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Requests remaining in the current 60-second window",
+                "schema": {
+                  "type": "integer",
+                  "example": 117
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "Unix epoch timestamp (seconds) when the current window resets",
+                "schema": {
+                  "type": "integer",
+                  "example": 1738800060
+                }
+              },
+              "X-RateLimit-Resource": {
+                "description": "The API resource this request counted against (e.g. 'properties', 'contacts')",
+                "schema": {
+                  "type": "string",
+                  "example": "properties"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Conversation"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key. Ensure your `Authorization: Bearer ra_...` header is set with a valid, non-revoked API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found. Either the ID does not exist, or it belongs to a different tenant (resources are tenant-isolated).",
             "content": {
               "application/json": {
                 "schema": {
@@ -9274,6 +9551,158 @@
         }
       }
     },
+    "/api/v1/webhooks/{id}/rotate-secret": {
+      "post": {
+        "operationId": "rotateWebhookSecret",
+        "summary": "Rotate webhook secret",
+        "description": "Use to rotate the signing secret for a webhook subscription. Returns the new secret (shown once). All future webhook payloads will be signed with the new secret. Side effects: invalidates the previous secret immediately. Requires Pro or Scale tier.",
+        "tags": [
+          "Webhooks"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WebhookId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Secret rotated. The new secret is returned once -- store it securely.",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "description": "Maximum requests allowed per minute for your tier",
+                "schema": {
+                  "type": "integer",
+                  "example": 120
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Requests remaining in the current 60-second window",
+                "schema": {
+                  "type": "integer",
+                  "example": 117
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "Unix epoch timestamp (seconds) when the current window resets",
+                "schema": {
+                  "type": "integer",
+                  "example": 1738800060
+                }
+              },
+              "X-RateLimit-Resource": {
+                "description": "The API resource this request counted against (e.g. 'properties', 'contacts')",
+                "schema": {
+                  "type": "string",
+                  "example": "properties"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid",
+                          "description": "Webhook subscription ID"
+                        },
+                        "secret": {
+                          "type": "string",
+                          "description": "New HMAC-SHA256 signing secret (shown once)"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "secret"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key. Ensure your `Authorization: Bearer ra_...` header is set with a valid, non-revoked API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found. Either the ID does not exist, or it belongs to a different tenant (resources are tenant-isolated).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "description": "Maximum requests allowed per minute for your tier",
+                "schema": {
+                  "type": "integer",
+                  "example": 120
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Requests remaining in the current 60-second window",
+                "schema": {
+                  "type": "integer",
+                  "example": 117
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "Unix epoch timestamp (seconds) when the current window resets",
+                "schema": {
+                  "type": "integer",
+                  "example": 1738800060
+                }
+              },
+              "X-RateLimit-Resource": {
+                "description": "The API resource this request counted against (e.g. 'properties', 'contacts')",
+                "schema": {
+                  "type": "string",
+                  "example": "properties"
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds until the rate limit resets. Wait at least this long before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "example": 12
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/conversations/search": {
       "get": {
         "operationId": "searchConversations",
@@ -10345,6 +10774,1066 @@
           },
           "422": {
             "description": "Request body validation failed. Check the `details` array for per-field errors.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "description": "Maximum requests allowed per minute for your tier",
+                "schema": {
+                  "type": "integer",
+                  "example": 120
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Requests remaining in the current 60-second window",
+                "schema": {
+                  "type": "integer",
+                  "example": 117
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "Unix epoch timestamp (seconds) when the current window resets",
+                "schema": {
+                  "type": "integer",
+                  "example": 1738800060
+                }
+              },
+              "X-RateLimit-Resource": {
+                "description": "The API resource this request counted against (e.g. 'properties', 'contacts')",
+                "schema": {
+                  "type": "string",
+                  "example": "properties"
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds until the rate limit resets. Wait at least this long before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "example": 12
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/properties/{id}/images/presign-batch": {
+      "post": {
+        "operationId": "presignImageBatch",
+        "summary": "Get presigned upload URLs (batch)",
+        "description": "Use to get presigned upload URLs for up to 20 images in a single request. Each image entry returns an `uploadUrl` and `r2Key`. Upload files via PUT, then call confirm-batch. Allowed types: image/jpeg, image/png, image/webp, image/heic. Max 10MB per image. Side effects: increments write counters. Requires Pro or Scale tier.",
+        "tags": [
+          "Property Images"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PropertyId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/V1PresignImageBatchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Array of presigned upload URLs and R2 keys",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "description": "Maximum requests allowed per minute for your tier",
+                "schema": {
+                  "type": "integer",
+                  "example": 120
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Requests remaining in the current 60-second window",
+                "schema": {
+                  "type": "integer",
+                  "example": 117
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "Unix epoch timestamp (seconds) when the current window resets",
+                "schema": {
+                  "type": "integer",
+                  "example": 1738800060
+                }
+              },
+              "X-RateLimit-Resource": {
+                "description": "The API resource this request counted against (e.g. 'properties', 'contacts')",
+                "schema": {
+                  "type": "string",
+                  "example": "properties"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "fileName": {
+                            "type": "string",
+                            "description": "Original file name from the request"
+                          },
+                          "uploadUrl": {
+                            "type": "string",
+                            "format": "uri",
+                            "description": "PUT the file to this presigned URL"
+                          },
+                          "r2Key": {
+                            "type": "string",
+                            "description": "R2 object key -- pass to confirm-batch"
+                          }
+                        },
+                        "required": [
+                          "fileName",
+                          "uploadUrl",
+                          "r2Key"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key. Ensure your `Authorization: Bearer ra_...` header is set with a valid, non-revoked API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request body validation failed. Check the `details` array for per-field errors.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "description": "Maximum requests allowed per minute for your tier",
+                "schema": {
+                  "type": "integer",
+                  "example": 120
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Requests remaining in the current 60-second window",
+                "schema": {
+                  "type": "integer",
+                  "example": 117
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "Unix epoch timestamp (seconds) when the current window resets",
+                "schema": {
+                  "type": "integer",
+                  "example": 1738800060
+                }
+              },
+              "X-RateLimit-Resource": {
+                "description": "The API resource this request counted against (e.g. 'properties', 'contacts')",
+                "schema": {
+                  "type": "string",
+                  "example": "properties"
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds until the rate limit resets. Wait at least this long before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "example": 12
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/properties/{id}/images/confirm-batch": {
+      "post": {
+        "operationId": "confirmImageBatch",
+        "summary": "Confirm image uploads (batch)",
+        "description": "Use to confirm multiple image uploads after uploading to the presigned URLs. Creates database records for each image and makes them available in the property listing. Side effects: increments write counters, triggers 'property.updated' webhook. Requires Pro or Scale tier.",
+        "tags": [
+          "Property Images"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PropertyId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/V1ConfirmImageBatchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Images confirmed and records created",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "description": "Maximum requests allowed per minute for your tier",
+                "schema": {
+                  "type": "integer",
+                  "example": 120
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Requests remaining in the current 60-second window",
+                "schema": {
+                  "type": "integer",
+                  "example": 117
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "Unix epoch timestamp (seconds) when the current window resets",
+                "schema": {
+                  "type": "integer",
+                  "example": 1738800060
+                }
+              },
+              "X-RateLimit-Resource": {
+                "description": "The API resource this request counted against (e.g. 'properties', 'contacts')",
+                "schema": {
+                  "type": "string",
+                  "example": "properties"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/PropertyImage"
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key. Ensure your `Authorization: Bearer ra_...` header is set with a valid, non-revoked API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request body validation failed. Check the `details` array for per-field errors.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "description": "Maximum requests allowed per minute for your tier",
+                "schema": {
+                  "type": "integer",
+                  "example": 120
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Requests remaining in the current 60-second window",
+                "schema": {
+                  "type": "integer",
+                  "example": 117
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "Unix epoch timestamp (seconds) when the current window resets",
+                "schema": {
+                  "type": "integer",
+                  "example": 1738800060
+                }
+              },
+              "X-RateLimit-Resource": {
+                "description": "The API resource this request counted against (e.g. 'properties', 'contacts')",
+                "schema": {
+                  "type": "string",
+                  "example": "properties"
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds until the rate limit resets. Wait at least this long before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "example": 12
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/properties/{id}/images/import": {
+      "post": {
+        "operationId": "importPropertyImages",
+        "summary": "Import images by URL",
+        "description": "Use to import up to 20 images from external URLs. Returns a job ID for polling status via the import job endpoint. Images are downloaded, validated, and stored asynchronously. Side effects: creates an async job, increments write counters. Requires Pro or Scale tier.",
+        "tags": [
+          "Property Images"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PropertyId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportImagesRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Import job accepted. Poll the job endpoint for progress.",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "description": "Maximum requests allowed per minute for your tier",
+                "schema": {
+                  "type": "integer",
+                  "example": 120
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Requests remaining in the current 60-second window",
+                "schema": {
+                  "type": "integer",
+                  "example": 117
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "Unix epoch timestamp (seconds) when the current window resets",
+                "schema": {
+                  "type": "integer",
+                  "example": 1738800060
+                }
+              },
+              "X-RateLimit-Resource": {
+                "description": "The API resource this request counted against (e.g. 'properties', 'contacts')",
+                "schema": {
+                  "type": "string",
+                  "example": "properties"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "jobId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "description": "Job ID for polling status"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "pending"
+                          ],
+                          "description": "Initial job status"
+                        },
+                        "totalUrls": {
+                          "type": "integer",
+                          "description": "Number of URLs queued for import"
+                        }
+                      },
+                      "required": [
+                        "jobId",
+                        "status",
+                        "totalUrls"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key. Ensure your `Authorization: Bearer ra_...` header is set with a valid, non-revoked API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request body validation failed. Check the `details` array for per-field errors.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "description": "Maximum requests allowed per minute for your tier",
+                "schema": {
+                  "type": "integer",
+                  "example": 120
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Requests remaining in the current 60-second window",
+                "schema": {
+                  "type": "integer",
+                  "example": 117
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "Unix epoch timestamp (seconds) when the current window resets",
+                "schema": {
+                  "type": "integer",
+                  "example": 1738800060
+                }
+              },
+              "X-RateLimit-Resource": {
+                "description": "The API resource this request counted against (e.g. 'properties', 'contacts')",
+                "schema": {
+                  "type": "string",
+                  "example": "properties"
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds until the rate limit resets. Wait at least this long before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "example": 12
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/properties/{id}/images/import/{jobId}": {
+      "get": {
+        "operationId": "getImageImportJob",
+        "summary": "Get image import job status",
+        "description": "Use to poll the status of an image import job. Returns progress (imported/failed counts) and any errors. Read-only, no side effects.",
+        "tags": [
+          "Property Images"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PropertyId"
+          },
+          {
+            "$ref": "#/components/parameters/JobId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Import job status",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "description": "Maximum requests allowed per minute for your tier",
+                "schema": {
+                  "type": "integer",
+                  "example": 120
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Requests remaining in the current 60-second window",
+                "schema": {
+                  "type": "integer",
+                  "example": 117
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "Unix epoch timestamp (seconds) when the current window resets",
+                "schema": {
+                  "type": "integer",
+                  "example": 1738800060
+                }
+              },
+              "X-RateLimit-Resource": {
+                "description": "The API resource this request counted against (e.g. 'properties', 'contacts')",
+                "schema": {
+                  "type": "string",
+                  "example": "properties"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "jobId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "status": {
+                          "type": "string",
+                          "description": "Job status: pending, processing, completed, failed"
+                        },
+                        "totalUrls": {
+                          "type": "integer"
+                        },
+                        "imported": {
+                          "type": "integer",
+                          "description": "Successfully imported count"
+                        },
+                        "failed": {
+                          "type": "integer",
+                          "description": "Failed import count"
+                        },
+                        "errors": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "url": {
+                                "type": "string"
+                              },
+                              "message": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "url",
+                              "message"
+                            ]
+                          },
+                          "description": "Per-URL error details"
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "completedAt": {
+                          "type": "string",
+                          "nullable": true,
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "jobId",
+                        "status",
+                        "totalUrls",
+                        "imported",
+                        "failed",
+                        "errors",
+                        "createdAt",
+                        "completedAt"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key. Ensure your `Authorization: Bearer ra_...` header is set with a valid, non-revoked API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found. Either the ID does not exist, or it belongs to a different tenant (resources are tenant-isolated).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "description": "Maximum requests allowed per minute for your tier",
+                "schema": {
+                  "type": "integer",
+                  "example": 120
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Requests remaining in the current 60-second window",
+                "schema": {
+                  "type": "integer",
+                  "example": 117
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "Unix epoch timestamp (seconds) when the current window resets",
+                "schema": {
+                  "type": "integer",
+                  "example": 1738800060
+                }
+              },
+              "X-RateLimit-Resource": {
+                "description": "The API resource this request counted against (e.g. 'properties', 'contacts')",
+                "schema": {
+                  "type": "string",
+                  "example": "properties"
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds until the rate limit resets. Wait at least this long before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "example": 12
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/properties/bulk": {
+      "post": {
+        "operationId": "bulkCreateProperties",
+        "summary": "Bulk create properties",
+        "description": "Use to create up to 500 properties in a single request. Returns a job ID for polling status. Properties are validated and created asynchronously. Side effects: creates an async job, increments write counters. Requires Pro or Scale tier.",
+        "tags": [
+          "Properties"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkCreatePropertiesRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Bulk import job accepted. Poll the job endpoint for progress.",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "description": "Maximum requests allowed per minute for your tier",
+                "schema": {
+                  "type": "integer",
+                  "example": 120
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Requests remaining in the current 60-second window",
+                "schema": {
+                  "type": "integer",
+                  "example": 117
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "Unix epoch timestamp (seconds) when the current window resets",
+                "schema": {
+                  "type": "integer",
+                  "example": 1738800060
+                }
+              },
+              "X-RateLimit-Resource": {
+                "description": "The API resource this request counted against (e.g. 'properties', 'contacts')",
+                "schema": {
+                  "type": "string",
+                  "example": "properties"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "jobId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "description": "Job ID for polling status"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "pending"
+                          ],
+                          "description": "Initial job status"
+                        },
+                        "total": {
+                          "type": "integer",
+                          "description": "Number of properties queued"
+                        }
+                      },
+                      "required": [
+                        "jobId",
+                        "status",
+                        "total"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key. Ensure your `Authorization: Bearer ra_...` header is set with a valid, non-revoked API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request body validation failed. Check the `details` array for per-field errors.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "description": "Maximum requests allowed per minute for your tier",
+                "schema": {
+                  "type": "integer",
+                  "example": 120
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Requests remaining in the current 60-second window",
+                "schema": {
+                  "type": "integer",
+                  "example": 117
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "Unix epoch timestamp (seconds) when the current window resets",
+                "schema": {
+                  "type": "integer",
+                  "example": 1738800060
+                }
+              },
+              "X-RateLimit-Resource": {
+                "description": "The API resource this request counted against (e.g. 'properties', 'contacts')",
+                "schema": {
+                  "type": "string",
+                  "example": "properties"
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds until the rate limit resets. Wait at least this long before retrying.",
+                "schema": {
+                  "type": "integer",
+                  "example": 12
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/properties/bulk/{jobId}": {
+      "get": {
+        "operationId": "getBulkImportJob",
+        "summary": "Get bulk import job status",
+        "description": "Use to poll the status of a bulk property import job. Returns progress (created/failed counts), created property IDs, and any errors. Read-only, no side effects.",
+        "tags": [
+          "Properties"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/JobId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bulk import job status",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "description": "Maximum requests allowed per minute for your tier",
+                "schema": {
+                  "type": "integer",
+                  "example": 120
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "description": "Requests remaining in the current 60-second window",
+                "schema": {
+                  "type": "integer",
+                  "example": 117
+                }
+              },
+              "X-RateLimit-Reset": {
+                "description": "Unix epoch timestamp (seconds) when the current window resets",
+                "schema": {
+                  "type": "integer",
+                  "example": 1738800060
+                }
+              },
+              "X-RateLimit-Resource": {
+                "description": "The API resource this request counted against (e.g. 'properties', 'contacts')",
+                "schema": {
+                  "type": "string",
+                  "example": "properties"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "jobId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "status": {
+                          "type": "string",
+                          "description": "Job status: pending, processing, completed, failed"
+                        },
+                        "total": {
+                          "type": "integer"
+                        },
+                        "created": {
+                          "type": "integer",
+                          "description": "Successfully created count"
+                        },
+                        "failed": {
+                          "type": "integer",
+                          "description": "Failed creation count"
+                        },
+                        "createdPropertyIds": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "description": "IDs of successfully created properties"
+                        },
+                        "errors": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "index": {
+                                "type": "integer",
+                                "description": "Index in the original properties array"
+                              },
+                              "message": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "index",
+                              "message"
+                            ]
+                          },
+                          "description": "Per-property error details"
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "completedAt": {
+                          "type": "string",
+                          "nullable": true,
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "jobId",
+                        "status",
+                        "total",
+                        "created",
+                        "failed",
+                        "createdPropertyIds",
+                        "errors",
+                        "createdAt",
+                        "completedAt"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key. Ensure your `Authorization: Bearer ra_...` header is set with a valid, non-revoked API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found. Either the ID does not exist, or it belongs to a different tenant (resources are tenant-isolated).",
             "content": {
               "application/json": {
                 "schema": {

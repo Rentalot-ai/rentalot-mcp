@@ -12,16 +12,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Draft tools now support 'subject' field for email drafts on create_draft, update_draft, and send_draft
 - Property tools: 13 new fields on create/update (amenities, leaseMinMonths, depositAmount, squareFootage, etc.) and 4 new list filters (minBathrooms, availableBefore, petFriendly, hasParking)
 - Settings tool: full coverage of all agent preferences (28 fields) and email notification preferences (10 fields)
+- GitHub Actions CI with lint, typecheck, test, build, and changelog validation
+- GitHub Actions release workflow with chlog-powered release notes
 
 ### Changed
 
 - Migrate API error responses to RFC 9457 format
 - Add webhook secret rotation endpoint
+- Disable GitLab CI in favor of GitHub Actions
 
 ### Fixed
 
 - Session enum drift: status filter now accepts 'draft' (was 'cancelled'), reviewStatus accepts 'pending_review' (was 'pending')
 - Removed invalid 'status' filter from list_properties (not supported by API)
+- CI test job now uses vitest instead of bun test runner
 
 ## [0.1.0] - 2026-03-25
 
@@ -40,6 +44,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Changed
 
 - Migrate project to Bun for improved performance
-- Add GitLab CI for lint, typecheck, build, and test
+- Add CI for lint, typecheck, build, and test
 
-[Unreleased]: https://gitlab.com/ariel-frischer/rentalot-mcp/-/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/Rentalot-ai/rentalot-mcp/compare/v0.1.0...HEAD

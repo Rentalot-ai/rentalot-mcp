@@ -5,7 +5,7 @@
   "license": "MIT",
   "type": "module",
   "bin": {
-    "rentalot-mcp": "./dist/index.js"
+    "rentalot-mcp": "dist/index.js"
   },
   "main": "./dist/index.js",
   "files": [
@@ -16,7 +16,7 @@
     "dev": "bun --watch src/index.ts",
     "lint": "eslint src/",
     "typecheck": "tsc --noEmit",
-    "start": "bun dist/index.js",
+    "start": "node dist/index.js",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:drift": "vitest run --config vitest.drift.config.ts",

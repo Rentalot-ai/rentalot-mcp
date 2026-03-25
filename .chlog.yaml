@@ -1,1 +1,3 @@
-repo_url: https://gitlab.com/ariel-frischer/rentalot-mcp
+repo_url: https://github.com/Rentalot-ai/rentalot-mcp
+changelog_file: CHANGELOG.yaml
+public_file: CHANGELOG.md

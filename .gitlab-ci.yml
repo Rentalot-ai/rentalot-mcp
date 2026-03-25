@@ -1,5 +1,11 @@
+# CI disabled — re-enable by removing the workflow block
+workflow:
+  rules:
+    - when: never
+
 stages:
   - check
+  - publish
 
 lint-typecheck-build:
   stage: check
@@ -15,6 +21,7 @@ lint-typecheck-build:
     - bun run build
   rules:
     - if: $CI_PIPELINE_SOURCE == "push"
+    - if: $CI_COMMIT_TAG =~ /^v\d+/
 
 test:
   stage: check
@@ -25,6 +32,16 @@ test:
       - node_modules/
   script:
     - bun install --frozen-lockfile
-    - bun test
+    - bun run test
   rules:
     - if: $CI_PIPELINE_SOURCE == "push"
+    - if: $CI_COMMIT_TAG =~ /^v\d+/
+
+publish-npm:
+  stage: publish
+  image: node:22-slim
+  script:
+    - npm config set //registry.npmjs.org/:_authToken "${NPM_TOKEN}"
+    - npm publish --access public
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v\d+/
