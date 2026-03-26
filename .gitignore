@@ -1,10 +1,51 @@
+# Dependencies
 node_modules/
+
+# Build output
 dist/
+*.tsbuildinfo
+
+# Environment & secrets
+.env
+.env.*
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test & coverage
+coverage/
+
+# Lockfiles (bun-managed)
 package-lock.json
+
+# Claude Code
 .claude/
 
-# Dolt database files (added by bd init)
+# Beads / Dolt
 .dolt/
-*.db
 .beads/
-coverage/
+*.db
+
+# Go (if applicable)
+bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+vendor/
+
+# Misc
+*.log
+tmp/
+.cache/
