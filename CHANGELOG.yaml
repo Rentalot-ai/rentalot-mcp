@@ -1,6 +1,8 @@
 project: '@rentalot/mcp-server'
 versions:
-    unreleased:
+    unreleased: {}
+    0.2.0:
+        date: 2026-03-25
         added:
             - Add role and language fields to contact schemas
             - Draft tools now support 'subject' field for email drafts on create_draft, update_draft, and send_draft

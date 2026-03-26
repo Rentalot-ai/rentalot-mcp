@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-03-25
+
 ### Added
 
 - Add role and language fields to contact schemas
@@ -47,4 +49,5 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Migrate project to Bun for improved performance
 - Add CI for lint, typecheck, build, and test
 
-[Unreleased]: https://github.com/Rentalot-ai/rentalot-mcp/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/Rentalot-ai/rentalot-mcp/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/Rentalot-ai/rentalot-mcp/compare/v0.1.0...v0.2.0
