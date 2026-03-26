@@ -25,13 +25,22 @@ check:
 	bun run lint && bun run typecheck && bun run test
 
 release-patch: check build
-	npm version patch
+	$(eval VER := $(shell npm version patch --no-git-tag-version | tr -d 'v'))
+	chlog release $(VER) && chlog sync
+	git add package.json CHANGELOG.yaml CHANGELOG.md && git commit -m "release: v$(VER)"
+	git tag "v$(VER)"
 	git push origin main && git push gh main --tags
 
 release-minor: check build
-	npm version minor
+	$(eval VER := $(shell npm version minor --no-git-tag-version | tr -d 'v'))
+	chlog release $(VER) && chlog sync
+	git add package.json CHANGELOG.yaml CHANGELOG.md && git commit -m "release: v$(VER)"
+	git tag "v$(VER)"
 	git push origin main && git push gh main --tags
 
 release-major: check build
-	npm version major
+	$(eval VER := $(shell npm version major --no-git-tag-version | tr -d 'v'))
+	chlog release $(VER) && chlog sync
+	git add package.json CHANGELOG.yaml CHANGELOG.md && git commit -m "release: v$(VER)"
+	git tag "v$(VER)"
 	git push origin main && git push gh main --tags
