@@ -65,6 +65,7 @@ export function registerPropertyTools(server: McpServer, api: ApiClient) {
       petPolicy: z.enum(PET_POLICY_ENUM).optional().describe("Pet policy"),
       parking: z.enum(PARKING_ENUM).optional().describe("Parking availability"),
       laundry: z.enum(LAUNDRY_ENUM).optional().describe("Laundry availability"),
+      imageUrls: z.array(z.string().max(2048).url()).min(1).max(20).optional().describe("Image URLs for the property (1–20 URIs)"),
       amenities: z.array(z.string().max(200)).max(50).optional().describe("List of amenities"),
       leaseMinMonths: z.number().int().min(1).max(120).optional().describe("Minimum lease term in months"),
       leaseMaxMonths: z.number().int().min(1).max(120).optional().describe("Maximum lease term in months"),
