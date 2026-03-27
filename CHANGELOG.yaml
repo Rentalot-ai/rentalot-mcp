@@ -1,6 +1,8 @@
 project: '@rentalot/mcp-server'
 versions:
-    unreleased:
+    unreleased: {}
+    0.2.1:
+        date: 2026-03-26
         added:
             - Add imageUrls parameter to create_property tool (1–20 URI array)
     0.2.0:
