@@ -35,7 +35,7 @@ export function registerSettingsTools(server: McpServer, api: ApiClient) {
 
   server.tool(
     "get_settings",
-    "Use to get all account settings including agent preferences, working hours, voice settings, public chat config, follow-up settings, and email notification preferences.",
+    "Use to get all account settings including agent preferences, working hours, voice settings, prescreening config, follow-up settings, and email notification preferences.",
     {},
     async () => {
       const res = await api.get("/api/v1/settings");
@@ -73,7 +73,8 @@ export function registerSettingsTools(server: McpServer, api: ApiClient) {
         .max(4)
         .optional()
         .describe("Suggested questions for public chat (max 4)"),
-      publicChatEnabled: z.boolean().optional().describe("Enable the public chat widget"),
+      prescreeningEnabled: z.boolean().optional().describe("Enable public prescreening chat"),
+      publicChatEnabled: z.boolean().optional().describe("Deprecated — use prescreeningEnabled"),
       profilePublic: z.boolean().optional().describe("Make agent profile publicly visible"),
       licenseNumber: z.string().max(100).optional().describe("Real estate license number"),
       publicPhone: z.string().max(30).optional().describe("Public-facing phone number"),
@@ -137,7 +138,17 @@ export function registerSettingsTools(server: McpServer, api: ApiClient) {
         .describe("Email notification preferences"),
     },
     async (args) => {
-      const res = await api.patch("/api/v1/settings", args);
+      // Map deprecated publicChatEnabled → prescreeningEnabled
+      const { publicChatEnabled, ...rest } = args;
+      const body = {
+        ...rest,
+        ...(args.prescreeningEnabled !== undefined
+          ? { prescreeningEnabled: args.prescreeningEnabled }
+          : publicChatEnabled !== undefined
+            ? { prescreeningEnabled: publicChatEnabled }
+            : {}),
+      };
+      const res = await api.patch("/api/v1/settings", body);
       if (res.error) {
         return { content: [{ type: "text" as const, text: `Error: ${res.error.message}` }], isError: true };
       }

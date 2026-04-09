@@ -2002,11 +2002,15 @@
                 "workflow.created",
                 "workflow.updated",
                 "workflow.deleted",
-                "bulk_import.completed"
+                "bulk_import.completed",
+                "event.created",
+                "event.cancelled",
+                "event.deleted",
+                "showing.deleted"
               ]
             },
             "minItems": 1,
-            "maxItems": 12
+            "maxItems": 16
           },
           "description": {
             "type": "string",
@@ -2041,11 +2045,15 @@
                 "workflow.created",
                 "workflow.updated",
                 "workflow.deleted",
-                "bulk_import.completed"
+                "bulk_import.completed",
+                "event.created",
+                "event.cancelled",
+                "event.deleted",
+                "showing.deleted"
               ]
             },
             "minItems": 1,
-            "maxItems": 12
+            "maxItems": 16
           },
           "active": {
             "type": "boolean"
@@ -2643,9 +2651,13 @@
             "nullable": true,
             "description": "Custom intro message for public chat"
           },
+          "prescreeningEnabled": {
+            "type": "boolean",
+            "description": "Whether public prescreening is enabled"
+          },
           "publicChatEnabled": {
             "type": "boolean",
-            "description": "Whether public chat is enabled"
+            "description": "Deprecated — use prescreeningEnabled"
           },
           "profilePublic": {
             "type": "boolean",
@@ -2751,6 +2763,7 @@
           "defaultShowingDuration",
           "emailSignOff",
           "publicChatIntro",
+          "prescreeningEnabled",
           "publicChatEnabled",
           "profilePublic",
           "licenseNumber",
@@ -12611,9 +12624,13 @@
                     "maxLength": 500,
                     "description": "Custom intro for public chat"
                   },
+                  "prescreeningEnabled": {
+                    "type": "boolean",
+                    "description": "Enable or disable public prescreening"
+                  },
                   "publicChatEnabled": {
                     "type": "boolean",
-                    "description": "Enable or disable public chat"
+                    "description": "Deprecated — use prescreeningEnabled"
                   },
                   "profilePublic": {
                     "type": "boolean",
