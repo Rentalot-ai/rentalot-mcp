@@ -1,6 +1,8 @@
 project: '@rentalot/mcp-server'
 versions:
-    unreleased:
+    unreleased: {}
+    0.2.2:
+        date: 2026-04-08
         changed:
             - Rename publicChatEnabled to prescreeningEnabled in update_settings tool (backward-compatible)
     0.2.1:
