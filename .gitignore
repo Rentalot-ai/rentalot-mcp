@@ -1,9 +1,12 @@
 # Dependencies
-node_modules/
+node_modules
 
 # Build output
 dist/
 *.tsbuildinfo
+
+# Agent worktrees and retained reports
+.worktrees/
 
 # Environment & secrets
 .env

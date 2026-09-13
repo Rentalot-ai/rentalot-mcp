@@ -1,4 +1,15 @@
-.PHONY: build dev test lint typecheck publish publish-dry check release-patch release-minor release-major
+.PHONY: build dev test lint typecheck publish publish-dry check release-patch release-minor release-major worktree worktree-clean
+
+WORKTREE_SCRIPT ?= scripts/worktree-setup.sh
+BASE ?= $(shell git branch --show-current 2>/dev/null || echo HEAD)
+
+worktree:
+	@test -n "$(BRANCH)" || (echo "BRANCH is required: make worktree BRANCH=agent/name [BASE=$$(git branch --show-current)]" >&2; exit 1)
+	@bash "$(WORKTREE_SCRIPT)" "$(BRANCH)" "$(BASE)"
+
+worktree-clean:
+	@test -n "$(BRANCH)" || (echo "BRANCH is required: make worktree-clean BRANCH=agent/name" >&2; exit 1)
+	@git worktree remove --force ".worktrees/$(BRANCH)"
 
 build:
 	bun run build
