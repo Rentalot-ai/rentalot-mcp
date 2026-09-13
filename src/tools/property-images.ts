@@ -20,7 +20,7 @@ export function registerPropertyImageTools(server: McpServer, api: ApiClient) {
 
   server.tool(
     "presign_image_upload",
-    "Use to get a presigned URL for uploading a property image to R2 storage. Returns an upload URL and R2 key. Write operation — requires Pro tier or higher.",
+    "Use to get a presigned URL for uploading a property image to R2 storage. Returns an upload URL and R2 key. Write operation — available on Pro and Scale API plans. Starter is read-only; this resource is not available during the development-only trial.",
     {
       propertyId: z.string().uuid().describe("The property UUID"),
       fileName: z.string().describe("Original file name (e.g. kitchen.jpg)"),
@@ -38,7 +38,7 @@ export function registerPropertyImageTools(server: McpServer, api: ApiClient) {
 
   server.tool(
     "confirm_image_upload",
-    "Use to confirm a property image upload after the file has been uploaded to the presigned URL. Creates the image record. Write operation — requires Pro tier or higher.",
+    "Use to confirm a property image upload after the file has been uploaded to the presigned URL. Creates the image record. Write operation — available on Pro and Scale API plans. Starter is read-only; this resource is not available during the development-only trial.",
     {
       propertyId: z.string().uuid().describe("The property UUID"),
       r2Key: z.string().describe("The R2 storage key returned from presign_image_upload"),
@@ -57,7 +57,7 @@ export function registerPropertyImageTools(server: McpServer, api: ApiClient) {
 
   server.tool(
     "delete_property_images",
-    "Use to delete one or more images from a property. Write operation — requires Pro tier or higher.",
+    "Use to delete one or more images from a property. Write operation — available on Pro and Scale API plans. Starter is read-only; this resource is not available during the development-only trial.",
     {
       propertyId: z.string().uuid().describe("The property UUID"),
       imageIds: z.array(z.string().uuid()).min(1).describe("Array of image UUIDs to delete"),
@@ -73,7 +73,7 @@ export function registerPropertyImageTools(server: McpServer, api: ApiClient) {
 
   server.tool(
     "reorder_property_images",
-    "Use to reorder images for a property. Pass the image IDs in the desired display order. Write operation — requires Pro tier or higher.",
+    "Use to reorder images for a property. Pass the image IDs in the desired display order. Write operation — available on Pro and Scale API plans. Starter is read-only; this resource is not available during the development-only trial.",
     {
       propertyId: z.string().uuid().describe("The property UUID"),
       imageIds: z.array(z.string().uuid()).min(1).describe("Image UUIDs in desired display order"),
@@ -89,7 +89,7 @@ export function registerPropertyImageTools(server: McpServer, api: ApiClient) {
 
   server.tool(
     "presign_image_batch",
-    "Use to get presigned URLs for uploading up to 20 property images at once. Returns an upload URL and R2 key for each image. Write operation — requires Pro tier or higher.",
+    "Use to get presigned URLs for uploading up to 20 property images at once. Returns an upload URL and R2 key for each image. Write operation — available on Pro and Scale API plans. Starter is read-only; this resource is not available during the development-only trial.",
     {
       propertyId: z.string().uuid().describe("The property UUID"),
       images: z
@@ -115,7 +115,7 @@ export function registerPropertyImageTools(server: McpServer, api: ApiClient) {
 
   server.tool(
     "confirm_image_batch",
-    "Use to confirm multiple property image uploads after files have been uploaded to their presigned URLs. Creates image records for all confirmed uploads. Supports Idempotency-Key header. Write operation — requires Pro tier or higher.",
+    "Use to confirm multiple property image uploads after files have been uploaded to their presigned URLs. Creates image records for all confirmed uploads. Supports Idempotency-Key header. Write operation — available on Pro and Scale API plans. Starter is read-only; this resource is not available during the development-only trial.",
     {
       propertyId: z.string().uuid().describe("The property UUID"),
       images: z
@@ -153,7 +153,7 @@ export function registerPropertyImageTools(server: McpServer, api: ApiClient) {
 
   server.tool(
     "import_property_images",
-    "Use to import property images from external URLs. The server downloads from the URLs (SSRF-protected) and uploads to R2 asynchronously. Returns a job ID to track progress. Supports Idempotency-Key header. Write operation — requires Pro tier or higher.",
+    "Use to import property images from external URLs. The server downloads from the URLs (SSRF-protected) and uploads to R2 asynchronously. Returns a job ID to track progress. Supports Idempotency-Key header. Write operation — available on Pro and Scale API plans. Starter is read-only; this resource is not available during the development-only trial.",
     {
       propertyId: z.string().uuid().describe("The property UUID"),
       urls: z

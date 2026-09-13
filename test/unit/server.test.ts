@@ -43,7 +43,6 @@ describe("Server registration", () => {
     const names = tools.map((t) => t.name).sort();
 
     expect(names).toEqual(EXPECTED_TOOLS);
-    expect(tools).toHaveLength(65);
   });
 
   it("every tool has a description", async () => {

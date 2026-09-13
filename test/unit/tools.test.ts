@@ -73,17 +73,17 @@ describe("Tool behavior — successful responses", () => {
       contactId: "550e8400-e29b-41d4-a716-446655440000",
     });
     expect(result.isError).toBeFalsy();
-    expect(textContent(result)).toBe("Contact deleted successfully.");
+    expect(textContent(result)).toBe("Contact soft-deleted successfully.");
   });
 
-  it("delete_property returns deleted JSON on 200", async () => {
+  it("returns soft-delete success text on 200", async () => {
     vi.mocked(api.delete).mockResolvedValue({ status: 200, data: undefined });
 
     const result = await callTool("delete_property", {
       propertyId: "550e8400-e29b-41d4-a716-446655440000",
     });
     expect(result.isError).toBeFalsy();
-    expect(JSON.parse(textContent(result))).toEqual({ deleted: true });
+    expect(textContent(result)).toBe("Property soft-deleted successfully.");
   });
 });
 
@@ -107,7 +107,7 @@ describe("Tool behavior — error responses", () => {
       error: { code: "validation_error", message: "Duplicate contact" },
     });
 
-    const result = await callTool("create_contact", { name: "Bob" });
+    const result = await callTool("create_contact", { name: "Bob", email: "bob@example.com" });
     expect(result.isError).toBe(true);
     expect(textContent(result)).toContain("Duplicate contact");
   });

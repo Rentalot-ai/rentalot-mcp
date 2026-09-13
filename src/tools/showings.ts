@@ -43,7 +43,7 @@ export function registerShowingTools(server: McpServer, api: ApiClient) {
 
   server.tool(
     "create_showing",
-    "Use to schedule a new property showing. Requires property ID, contact ID, title, and start/end times. Write operation — requires Pro tier or higher.",
+    "Use to schedule a new property showing. Requires property ID, contact ID, title, and start/end times. Write operation — available on Pro and Scale API plans. Starter is read-only; this resource is not available during the development-only trial.",
     {
       propertyId: z.string().uuid().describe("Property to show"),
       contactId: z.string().uuid().describe("Contact attending the showing"),
@@ -66,7 +66,7 @@ export function registerShowingTools(server: McpServer, api: ApiClient) {
 
   server.tool(
     "update_showing",
-    "Use to update a showing's details or status. Only include fields you want to change. To cancel a showing, set status to 'cancelled'. Write operation — requires Pro tier or higher.",
+    "Use to update a showing's details or status. Only include fields you want to change. To cancel a showing, set status to 'cancelled'. Write operation — available on Pro and Scale API plans. Starter is read-only; this resource is not available during the development-only trial.",
     {
       showingId: z.string().uuid().describe("The showing ID to update"),
       propertyId: z.string().uuid().optional().describe("Property to show"),
@@ -109,7 +109,7 @@ export function registerShowingTools(server: McpServer, api: ApiClient) {
 
   server.tool(
     "delete_showing",
-    "Use to permanently delete a showing. Prefer updating status to 'cancelled' instead. Write operation — requires Pro tier or higher.",
+    "Use to cancel a showing. This updates the showing status to 'cancelled'; it does not permanently delete the record. Write operation — available on Pro and Scale API plans. Starter is read-only; this resource is not available during the development-only trial.",
     {
       showingId: z.string().uuid().describe("The showing ID to delete"),
     },
@@ -118,7 +118,7 @@ export function registerShowingTools(server: McpServer, api: ApiClient) {
       if (res.error) {
         return { content: [{ type: "text" as const, text: `Error: ${res.error.message}` }], isError: true };
       }
-      return { content: [{ type: "text" as const, text: "Showing deleted successfully." }] };
+      return { content: [{ type: "text" as const, text: "Showing cancelled successfully." }] };
     }
   );
 }

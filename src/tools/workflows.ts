@@ -41,7 +41,7 @@ export function registerWorkflowTools(server: McpServer, api: ApiClient) {
 
   server.tool(
     "create_workflow",
-    "Use to create a new workflow template. Slug is auto-generated from name. Write operation — requires Pro tier or higher.",
+    "Use to create a new workflow template. Slug is auto-generated from name. Write operation — available on Pro and Scale API plans. Starter is read-only; this resource is not available during the development-only trial.",
     {
       name: z.string().describe("Workflow name (slug auto-generated from this)"),
       steps: z
@@ -76,7 +76,7 @@ export function registerWorkflowTools(server: McpServer, api: ApiClient) {
 
   server.tool(
     "update_workflow",
-    "Use to update a workflow template. Only include fields you want to change. Changes to execution fields (steps, triggerConfig, exitConditions, questionConfig, completionConfig) auto-create a version snapshot. Write operation — requires Pro tier or higher.",
+    "Use to update a workflow template. Only include fields you want to change. Changes to execution fields (steps, triggerConfig, exitConditions, questionConfig, completionConfig) auto-create a version snapshot. Write operation — available on Pro and Scale API plans. Starter is read-only; this resource is not available during the development-only trial.",
     {
       workflowId: z.string().uuid().describe("Workflow template ID to update"),
       name: z.string().optional().describe("Updated workflow name"),
@@ -106,7 +106,7 @@ export function registerWorkflowTools(server: McpServer, api: ApiClient) {
 
   server.tool(
     "delete_workflow",
-    "Use to delete a workflow template. Fails with 409 if active runs exist — cancel or wait for them to finish first. Write operation — requires Pro tier or higher.",
+    "Use to delete a workflow template. Fails with 409 if active runs exist — cancel or wait for them to finish first. Write operation — available on Pro and Scale API plans. Starter is read-only; this resource is not available during the development-only trial.",
     {
       workflowId: z.string().uuid().describe("Workflow template ID to delete"),
     },
@@ -121,7 +121,7 @@ export function registerWorkflowTools(server: McpServer, api: ApiClient) {
 
   server.tool(
     "trigger_workflow_run",
-    "Use to trigger a new run of a workflow for a specific contact. Optionally scope it to a property. The workflow will execute its steps asynchronously. Write operation — requires Pro tier or higher.",
+    "Use to trigger a new run of a workflow for a specific contact. Optionally scope it to a property. The workflow will execute its steps asynchronously. Write operation — available on Pro and Scale API plans. Starter is read-only; this resource is not available during the development-only trial.",
     {
       workflowId: z.string().uuid().describe("Workflow template ID to run"),
       contactId: z.string().uuid().describe("Contact ID to run the workflow for"),

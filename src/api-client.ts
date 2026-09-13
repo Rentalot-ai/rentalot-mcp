@@ -12,6 +12,7 @@ export interface ApiResponse<T = unknown> {
   data?: T;
   error?: { code: string; message: string; details?: Array<{ field: string; message: string }> };
   status: number;
+  headers: Record<string, string>;
 }
 
 export class ApiClient {
@@ -66,7 +67,8 @@ export class ApiClient {
     });
 
     const status = res.status;
-    if (status === 204) return { status };
+    const headers = Object.fromEntries(res.headers.entries());
+    if (status === 204) return { status, headers };
 
     const json = await res.json().catch(() => null);
 
@@ -75,9 +77,23 @@ export class ApiClient {
       const error = json?.error
         ?? (json?.detail ? { code: json.type ?? "problem", message: json.detail } : null)
         ?? { code: "unknown", message: `HTTP ${status}` };
-      return { status, error };
+      return {
+        status,
+        headers,
+        error: {
+          ...error,
+          message: appendRetryGuidance(status, error.message, headers),
+        },
+      };
     }
 
-    return { status, data: json as T };
+    return { status, headers, data: json as T };
   }
+}
+
+function appendRetryGuidance(status: number, message: string, headers: Record<string, string>): string {
+  if (status !== 429) return message;
+
+  const retryAfter = Object.entries(headers).find(([name]) => name.toLowerCase() === "retry-after")?.[1];
+  return retryAfter ? `${message} Retry-After: ${retryAfter} seconds.` : message;
 }

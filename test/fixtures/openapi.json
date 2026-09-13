@@ -143,6 +143,12 @@
             "description": "Unique property identifier",
             "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
           },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "Human-readable property name"
+          },
           "userId": {
             "type": "string",
             "description": "Owner tenant ID"
@@ -236,6 +242,7 @@
         },
         "required": [
           "id",
+          "title",
           "userId",
           "address",
           "city",
@@ -304,6 +311,12 @@
       "CreatePropertyRequest": {
         "type": "object",
         "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "Human-readable property name. When provided, this explicit title takes precedence. When omitted, Rentalot derives the title from the required address for backward compatibility."
+          },
           "address": {
             "type": "string",
             "minLength": 1,
@@ -477,6 +490,12 @@
       "UpdatePropertyRequest": {
         "type": "object",
         "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "Human-readable property name. When provided, replaces the property's current title."
+          },
           "address": {
             "type": "string",
             "minLength": 1,

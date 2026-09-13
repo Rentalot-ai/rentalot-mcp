@@ -5,7 +5,7 @@ import { ApiClient } from "../api-client.js";
 export function registerBulkImportTools(server: McpServer, api: ApiClient) {
   server.tool(
     "bulk_create_properties",
-    "Use to bulk-import up to 500 properties at once. Accepts flexible field names (Zillow/AppFolio aliases are auto-normalized). Returns a job ID for tracking progress. Supports Idempotency-Key header to prevent duplicates. Write operation — requires Pro tier or higher.",
+    "Use to bulk-import up to 500 properties at once. Accepts flexible field names (Zillow/AppFolio aliases are auto-normalized). Returns a job ID for tracking progress. Supports Idempotency-Key header to prevent duplicates. Write operation — available on Pro and Scale API plans. Starter is read-only; this resource is not available during the development-only trial.",
     {
       properties: z
         .array(z.record(z.unknown()))

@@ -125,12 +125,12 @@ describe("check_showing_availability", () => {
 });
 
 describe("delete_showing", () => {
-  it("deletes showing and returns success text", async () => {
+  it("cancels showing and returns success text", async () => {
     vi.mocked(api.delete).mockResolvedValue({ status: 204 });
 
     const result = await callTool("delete_showing", { showingId: UUID });
     expect(result.isError).toBeFalsy();
-    expect(textContent(result)).toBe("Showing deleted successfully.");
+    expect(textContent(result)).toBe("Showing cancelled successfully.");
   });
 
   it("returns error on failure", async () => {
