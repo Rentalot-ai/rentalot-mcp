@@ -36,7 +36,7 @@ export function registerWebhookTools(server: McpServer, api: ApiClient) {
 
   server.tool(
     "create_webhook",
-    "Use to create a webhook subscription. Specify an HTTPS URL and one or more event types to subscribe to. Payloads are signed with HMAC-SHA256. Write operation — requires Pro tier or higher.",
+    "Use to create a webhook subscription. Specify an HTTPS URL and one or more event types to subscribe to. Payloads are signed with HMAC-SHA256. Write operation — available on Pro and Scale API plans. Starter is read-only; this resource is not available during the development-only trial.",
     {
       url: z.string().url().describe("HTTPS endpoint URL to receive webhook events"),
       events: z
@@ -75,7 +75,7 @@ export function registerWebhookTools(server: McpServer, api: ApiClient) {
 
   server.tool(
     "update_webhook",
-    "Use to update a webhook subscription. Only include fields you want to change. Write operation — requires Pro tier or higher.",
+    "Use to update a webhook subscription. Only include fields you want to change. Write operation — available on Pro and Scale API plans. Starter is read-only; this resource is not available during the development-only trial.",
     {
       webhookId: z.string().uuid().describe("Webhook subscription ID to update"),
       url: z.string().url().optional().describe("New HTTPS endpoint URL"),
@@ -94,7 +94,7 @@ export function registerWebhookTools(server: McpServer, api: ApiClient) {
 
   server.tool(
     "delete_webhook",
-    "Use to delete a webhook subscription. Events will no longer be delivered to the endpoint. Write operation — requires Pro tier or higher.",
+    "Use to delete a webhook subscription. Events will no longer be delivered to the endpoint. Write operation — available on Pro and Scale API plans. Starter is read-only; this resource is not available during the development-only trial.",
     {
       webhookId: z.string().uuid().describe("Webhook subscription ID to delete"),
     },
@@ -109,7 +109,7 @@ export function registerWebhookTools(server: McpServer, api: ApiClient) {
 
   server.tool(
     "test_webhook",
-    "Use to send a test event to a webhook endpoint. Useful for verifying your webhook handler is working correctly. Write operation — requires Pro tier or higher.",
+    "Use to send a test event to a webhook endpoint. Useful for verifying your webhook handler is working correctly. Write operation — available on Pro and Scale API plans. Starter is read-only; this resource is not available during the development-only trial.",
     {
       webhookId: z.string().uuid().describe("Webhook subscription ID to test"),
     },
@@ -124,7 +124,7 @@ export function registerWebhookTools(server: McpServer, api: ApiClient) {
 
   server.tool(
     "rotate_webhook_secret",
-    "Use to rotate the HMAC signing secret for a webhook subscription. The new secret is returned once and must be stored immediately — it cannot be retrieved again. Write operation — requires Pro tier or higher.",
+    "Use to rotate the HMAC signing secret for a webhook subscription. The new secret is returned once and must be stored immediately — it cannot be retrieved again. Write operation — available on Pro and Scale API plans. Starter is read-only; this resource is not available during the development-only trial.",
     {
       webhookId: z.string().uuid().describe("Webhook subscription ID"),
     },

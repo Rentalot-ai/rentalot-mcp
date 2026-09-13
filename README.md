@@ -84,6 +84,19 @@ Add to `~/.config/opencode/opencode.json`:
 2. Click **Create API Key**
 3. Copy the key (starts with `ra_`)
 
+### Local development and trial testing
+
+The MCP client defaults to `https://rentalot.ai`. For a local Rentalot development server, set the API origin explicitly:
+
+```bash
+export RENTALOT_BASE_URL=http://localhost:3000
+export RENTALOT_API_KEY=ra_your_development_key
+```
+
+The development-only trial requires an existing account and an API key owned by that account. It permits private, account-owned property and contact CRUD only. Production trial access is disabled, and Starter remains read-only. Do not point a trial walkthrough at production.
+
+Trial limits are shared across all keys and clients for the account. Key rotation does not restart the trial or restore lifetime quota. A key issued during the trial keeps its original expiry after a paid upgrade, so create a new paid key for continued paid access.
+
 ### Authentication
 
 You can provide your API key in two ways. Environment variables take priority over the config file.
@@ -126,7 +139,11 @@ api_key: ra_your_key
 
 > Respects `$XDG_CONFIG_HOME` — if set, looks for `$XDG_CONFIG_HOME/rentalot/config.yaml` instead.
 
-**Resolution order:** `RENTALOT_API_KEY` env var > `api_key` in config file
+**Resolution order:** `RENTALOT_API_KEY` env var > `api_key` in config file. `RENTALOT_BASE_URL` similarly overrides `base_url`; the default origin is `https://rentalot.ai`.
+
+### Quota recovery
+
+When a tool returns a rate-limit error, wait for the reported `Retry-After` duration. If it is absent, use `X-RateLimit-Reset`. Daily development-trial budgets reset at UTC midnight. Lifetime trial request/write budgets are account-owned and do not reset when rotating keys or switching MCP clients.
 
 ### AI Agent Skill
 

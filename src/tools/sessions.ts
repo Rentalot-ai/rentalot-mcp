@@ -43,7 +43,7 @@ export function registerSessionTools(server: McpServer, api: ApiClient) {
 
   server.tool(
     "review_session",
-    "Use to approve or deny a workflow session. Write operation — requires Pro tier or higher.",
+    "Use to approve or deny a workflow session. Write operation — available on Pro and Scale API plans. Starter is read-only; this resource is not available during the development-only trial.",
     {
       sessionId: z.string().uuid().describe("The session UUID to review"),
       reviewStatus: z.enum(["approved", "denied"]).describe("Approval decision"),

@@ -42,7 +42,7 @@ export function registerDraftTools(server: McpServer, api: ApiClient) {
 
   server.tool(
     "create_draft",
-    "Use to create a draft message for review before sending. Drafts auto-expire after 24 hours. Use send_draft to deliver it. Write operation — requires Pro tier or higher.",
+    "Use to create a draft message for review before sending. Drafts auto-expire after 24 hours. Use send_draft to deliver it. Write operation — available on Pro and Scale API plans. Starter is read-only; this resource is not available during the development-only trial.",
     {
       contactId: z.string().uuid().describe("The contact UUID to draft a message for"),
       channel: z.enum(CHANNEL_ENUM).describe("Messaging channel to send via"),
@@ -62,7 +62,7 @@ export function registerDraftTools(server: McpServer, api: ApiClient) {
 
   server.tool(
     "update_draft",
-    "Use to edit an existing draft message. Only 'pending' drafts can be updated. Write operation — requires Pro tier or higher.",
+    "Use to edit an existing draft message. Only 'pending' drafts can be updated. Write operation — available on Pro and Scale API plans. Starter is read-only; this resource is not available during the development-only trial.",
     {
       draftId: z.string().uuid().describe("The draft UUID to update"),
       body: z.string().min(1).max(10000).optional().describe("Updated message body text"),
@@ -82,7 +82,7 @@ export function registerDraftTools(server: McpServer, api: ApiClient) {
 
   server.tool(
     "send_draft",
-    "Use to send a pending draft message. The draft will be delivered via its specified channel. Once sent, the draft status changes to 'sent' and cannot be modified. Write operation — requires Pro tier or higher.",
+    "Use to send a pending draft message. The draft will be delivered via its specified channel. Once sent, the draft status changes to 'sent' and cannot be modified. Write operation — available on Pro and Scale API plans. Starter is read-only; this resource is not available during the development-only trial.",
     {
       draftId: z.string().uuid().describe("The draft UUID to send"),
       subject: z.string().max(200).optional().describe("Override the draft's subject line when sending"),
@@ -100,7 +100,7 @@ export function registerDraftTools(server: McpServer, api: ApiClient) {
 
   server.tool(
     "delete_draft",
-    "Use to delete a draft message. Only 'pending' drafts can be deleted. Write operation — requires Pro tier or higher.",
+    "Use to delete a draft message. Only 'pending' drafts can be deleted. Write operation — available on Pro and Scale API plans. Starter is read-only; this resource is not available during the development-only trial.",
     {
       draftId: z.string().uuid().describe("The draft UUID to delete"),
     },

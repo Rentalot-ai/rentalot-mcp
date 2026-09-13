@@ -18,7 +18,7 @@ export function registerSettingsTools(server: McpServer, api: ApiClient) {
 
   server.tool(
     "update_followup_settings",
-    "Use to update follow-up automation settings. Only include fields you want to change. Write operation — requires Pro tier or higher.",
+    "Use to update follow-up automation settings. Only include fields you want to change. Write operation — available on Pro and Scale API plans. Starter is read-only; this resource is not available during the development-only trial.",
     {
       enabled: z.boolean().optional().describe("Enable or disable automatic follow-ups"),
       idleHours: z.number().optional().describe("Hours of inactivity before a follow-up is triggered"),
@@ -48,7 +48,7 @@ export function registerSettingsTools(server: McpServer, api: ApiClient) {
 
   server.tool(
     "update_settings",
-    "Use to update account settings including agent preferences and email notifications. Only include fields you want to change. Write operation — requires Pro tier or higher.",
+    "Use to update account settings including agent preferences and email notifications. Only include fields you want to change. Write operation — available on Pro and Scale API plans. Starter is read-only; this resource is not available during the development-only trial.",
     {
       // Agent preferences
       agentName: z.string().max(50).optional().describe("Display name for the AI agent"),

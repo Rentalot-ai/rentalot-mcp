@@ -40,7 +40,7 @@ export function registerFollowupTools(server: McpServer, api: ApiClient) {
 
   server.tool(
     "create_followup",
-    "Use to schedule a follow-up message for a contact. The follow-up will be automatically sent at the scheduled time. Write operation — requires Pro tier or higher.",
+    "Use to schedule a follow-up message for a contact. The follow-up will be automatically sent at the scheduled time. Write operation — available on Pro and Scale API plans. Starter is read-only; this resource is not available during the development-only trial.",
     {
       contactId: z.string().uuid().describe("The contact UUID to follow up with"),
       conversationId: z.string().uuid().describe("The conversation UUID this follow-up belongs to"),
@@ -58,7 +58,7 @@ export function registerFollowupTools(server: McpServer, api: ApiClient) {
 
   server.tool(
     "delete_followup",
-    "Use to cancel and delete a pending follow-up. Only 'pending' follow-ups can be deleted. Write operation — requires Pro tier or higher.",
+    "Use to cancel and delete a pending follow-up. Only 'pending' follow-ups can be deleted. Write operation — available on Pro and Scale API plans. Starter is read-only; this resource is not available during the development-only trial.",
     {
       followupId: z.string().uuid().describe("The follow-up UUID to delete"),
     },

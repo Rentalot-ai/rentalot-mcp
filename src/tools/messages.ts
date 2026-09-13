@@ -5,7 +5,7 @@ import { ApiClient } from "../api-client.js";
 export function registerMessageTools(server: McpServer, api: ApiClient) {
   server.tool(
     "send_message",
-    "Use to send a message to a contact via their preferred channel (or a specified channel). The message is delivered through the connected channel adapter (WhatsApp, Telegram, SMS, or Gmail). Write operation — requires Pro tier or higher.",
+    "Use to send a message to a contact via their preferred channel (or a specified channel). The message is delivered through the connected channel adapter (WhatsApp, Telegram, SMS, or Gmail). Write operation — available on Pro and Scale API plans. Starter is read-only; this resource is not available during the development-only trial.",
     {
       contactId: z.string().uuid().describe("The contact ID to send the message to"),
       body: z.string().min(1).max(10000).describe("The message content"),

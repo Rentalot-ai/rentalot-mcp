@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- Align MCP property and contact schemas with the canonical CRM API contract
+
+### Changed
+
+- Document development-only trial eligibility and account-wide quota recovery
+
 ## [0.2.2] - 2026-04-08
 
 ### Changed
