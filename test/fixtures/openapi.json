@@ -143,15 +143,14 @@
             "description": "Unique property identifier",
             "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
           },
-          "title": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 500,
-            "description": "Human-readable property name"
-          },
           "userId": {
             "type": "string",
             "description": "Owner tenant ID"
+          },
+          "title": {
+            "type": "string",
+            "description": "Human-readable property name",
+            "example": "Downtown Loft"
           },
           "address": {
             "type": "string",
@@ -185,6 +184,19 @@
             "type": "integer",
             "description": "Number of bedrooms",
             "example": 2
+          },
+          "propertyType": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "house",
+              "apartment",
+              "condo",
+              "townhouse",
+              "room"
+            ],
+            "description": "Canonical rental property type. Null means unknown or not supplied; Studio is represented by bedrooms=0.",
+            "example": "apartment"
           },
           "bathrooms": {
             "type": "number",
@@ -242,14 +254,15 @@
         },
         "required": [
           "id",
-          "title",
           "userId",
+          "title",
           "address",
           "city",
           "state",
           "zip",
           "monthlyRent",
           "bedrooms",
+          "propertyType",
           "bathrooms",
           "features",
           "availabilityDate",
@@ -315,7 +328,8 @@
             "type": "string",
             "minLength": 1,
             "maxLength": 500,
-            "description": "Human-readable property name. When provided, this explicit title takes precedence. When omitted, Rentalot derives the title from the required address for backward compatibility."
+            "description": "Human-readable property name. When provided, this explicit title takes precedence. When omitted, Rentalot derives the title from the required address for backward compatibility.",
+            "example": "Downtown Loft"
           },
           "address": {
             "type": "string",
@@ -344,6 +358,18 @@
             "type": "integer",
             "minimum": 0,
             "maximum": 50
+          },
+          "propertyType": {
+            "type": "string",
+            "enum": [
+              "house",
+              "apartment",
+              "condo",
+              "townhouse",
+              "room"
+            ],
+            "description": "Canonical rental property type. Omitted for backward-compatible clients and legacy records.",
+            "example": "apartment"
           },
           "bathrooms": {
             "type": "number",
@@ -494,7 +520,8 @@
             "type": "string",
             "minLength": 1,
             "maxLength": 500,
-            "description": "Human-readable property name. When provided, replaces the property's current title."
+            "description": "Human-readable property name. When provided, replaces the property's current title.",
+            "example": "Downtown Loft"
           },
           "address": {
             "type": "string",
@@ -523,6 +550,16 @@
             "type": "integer",
             "minimum": 0,
             "maximum": 50
+          },
+          "propertyType": {
+            "type": "string",
+            "enum": [
+              "house",
+              "apartment",
+              "condo",
+              "townhouse",
+              "room"
+            ]
           },
           "bathrooms": {
             "type": "number",
@@ -2676,7 +2713,7 @@
           },
           "publicChatEnabled": {
             "type": "boolean",
-            "description": "Deprecated — use prescreeningEnabled"
+            "description": "Deprecated \u2014 use prescreeningEnabled"
           },
           "profilePublic": {
             "type": "boolean",
@@ -2925,7 +2962,7 @@
       "post": {
         "operationId": "createProperty",
         "summary": "Create a property",
-        "description": "Use to add a new rental property listing to the authenticated tenant's portfolio. Provide at minimum the address, monthly rent, bedrooms, and bathrooms. The property is created with status 'active' by default (configurable via the `status` field). Side effects: increments daily/monthly write counters. Requires Pro or Scale tier for API write access. Rate limit: Pro 20 WPM / 200 daily / 5,000 monthly; Scale 60 WPM / 1,000 daily / 25,000 monthly.",
+        "description": "Use to add a new rental property listing to the authenticated tenant's portfolio. Provide at minimum the address, monthly rent, bedrooms, and bathrooms. The title is optional for backward compatibility: when omitted, Rentalot derives it from the address; when provided, the explicit title takes precedence. The property is created with status 'active' by default (configurable via the `status` field). Side effects: increments daily/monthly write counters. Requires Pro or Scale tier for API write access. Rate limit: Pro 20 WPM / 200 daily / 5,000 monthly; Scale 60 WPM / 1,000 daily / 25,000 monthly.",
         "tags": [
           "Properties"
         ],
@@ -3078,26 +3115,55 @@
           {
             "schema": {
               "type": "integer",
-              "minimum": 0,
-              "exclusiveMinimum": true,
-              "description": "Page number for pagination (1-indexed). Default: 1.",
-              "example": 1
+              "minimum": 1
             },
             "required": false,
+            "description": "Page number for pagination (1-indexed). Default: 1.",
+            "example": 1,
             "name": "page",
             "in": "query"
           },
           {
             "schema": {
               "type": "integer",
-              "minimum": 0,
-              "exclusiveMinimum": true,
-              "maximum": 100,
-              "description": "Items per page. Default: 20. Max: 100 (tier-dependent: Starter 50, Pro 100, Scale 200).",
-              "example": 20
+              "minimum": 1,
+              "maximum": 100
             },
             "required": false,
+            "description": "Items per page. Default: 20. Max: 100 (tier-dependent: Starter 50, Pro 100, Scale 200).",
+            "example": 20,
             "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "house",
+                  "apartment",
+                  "condo",
+                  "townhouse",
+                  "room"
+                ]
+              }
+            },
+            "required": false,
+            "description": "Repeat to match any canonical rental property type: house, apartment, condo, townhouse, or room.",
+            "name": "propertyType",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "studio"
+              ]
+            },
+            "required": false,
+            "description": "Exact bedroom layout. Use studio for listings with exactly zero bedrooms.",
+            "name": "bedroomType",
             "in": "query"
           }
         ],
@@ -8178,7 +8244,7 @@
             }
           },
           "409": {
-            "description": "Conflict — template has active runs",
+            "description": "Conflict \u2014 template has active runs",
             "content": {
               "application/json": {
                 "schema": {
@@ -12649,7 +12715,7 @@
                   },
                   "publicChatEnabled": {
                     "type": "boolean",
-                    "description": "Deprecated — use prescreeningEnabled"
+                    "description": "Deprecated \u2014 use prescreeningEnabled"
                   },
                   "profilePublic": {
                     "type": "boolean",

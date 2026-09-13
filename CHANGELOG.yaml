@@ -5,6 +5,7 @@ versions:
             - Align MCP property and contact schemas with the canonical CRM API contract
         changed:
             - Document development-only trial eligibility and account-wide quota recovery
+            - Align property tools with canonical propertyType and exact Studio filters
     0.2.2:
         date: 2026-04-08
         changed:

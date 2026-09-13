@@ -219,6 +219,10 @@ Then invoke with `/rentalot` in any Claude Code session.
 | Sessions (3) | `list_sessions`, `get_session`, `review_session` | Read: Starter+ / Write: Pro+ |
 | Bulk Import (2) | `bulk_create_properties`, `get_bulk_import_job` | Pro+ |
 
+### Property contract
+
+Property creation and updates accept an optional canonical `propertyType`: `house`, `apartment`, `condo`, `townhouse`, or `room`. Existing callers may omit it, and legacy reads may return `null`. Studio is represented by `bedrooms=0`; use the exact `bedroomType=studio` filter, and repeat `propertyType` query values to match any selected type.
+
 ## Resources
 
 - `docs://api-reference` — Full API reference (authentication, rate limits, pagination, errors, all resource schemas)
