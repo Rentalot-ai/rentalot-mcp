@@ -20,7 +20,13 @@ describe("registered CRM tools over a real MCP client and HTTP loopback", () => 
       const url = String(input);
       const method = init?.method ?? "GET";
       const body = init?.body ? JSON.parse(String(init.body)) as Record<string, unknown> : undefined;
+      const requestUrl = new URL(url);
 
+      if (requestUrl.pathname === "/api/v1/properties" && method === "GET") {
+        return new Response(JSON.stringify({
+          data: [{ id: PROPERTY_ID, title: "Legacy Example Home", bedrooms: 0, propertyType: null }],
+        }), { status: 200 });
+      }
       if (url.endsWith("/api/v1/properties") && method === "POST") {
         property = { id: PROPERTY_ID, ...body, status: body?.status ?? "active" };
         return new Response(JSON.stringify({ data: property }), { status: 201 });
@@ -107,5 +113,21 @@ describe("registered CRM tools over a real MCP client and HTTP loopback", () => 
       const headers = (init as RequestInit | undefined)?.headers as Record<string, string> | undefined;
       return headers?.Authorization === "Bearer ra_fake";
     })).toBe(true);
+  });
+
+  it("executes canonical property filters and preserves nullable legacy types", async () => {
+    const result = await client.callTool({
+      name: "list_properties",
+      arguments: { propertyType: ["house", "condo"], bedroomType: "studio" },
+    });
+
+    expect(result.isError).toBeFalsy();
+    const response = JSON.parse((result.content as Array<{ type: string; text: string }>)[0]?.text ?? "{}");
+    expect(response.data[0].propertyType).toBeNull();
+
+    const requestUrl = new URL(String(fetchMock.mock.calls[0]?.[0]));
+    expect(requestUrl.searchParams.getAll("propertyType")).toEqual(["house", "condo"]);
+    expect(requestUrl.searchParams.get("bedroomType")).toBe("studio");
+    expect(requestUrl.searchParams.get("propertyType")).not.toBe("studio");
   });
 });

@@ -71,6 +71,69 @@ describe("canonical CRM tool contracts", () => {
     });
   });
 
+  it("accepts a canonical property type on create", async () => {
+    vi.mocked(api.post).mockResolvedValue({ status: 201, data: { id: UUID } });
+
+    const result = await callTool("create_property", {
+      address: "123 Main St",
+      monthlyRent: 2400,
+      bedrooms: 2,
+      bathrooms: 1.5,
+      propertyType: "apartment",
+    });
+
+    expect(result.isError).toBeFalsy();
+    expect(api.post).toHaveBeenCalledWith("/api/v1/properties", {
+      address: "123 Main St",
+      monthlyRent: 2400,
+      bedrooms: 2,
+      bathrooms: 1.5,
+      propertyType: "apartment",
+    });
+  });
+
+  it("rejects Studio and unknown property types before an API request", async () => {
+    const result = await callTool("create_property", {
+      address: "123 Main St",
+      monthlyRent: 2400,
+      bedrooms: 0,
+      bathrooms: 1,
+      propertyType: "studio",
+    });
+
+    expect(result.isError).toBe(true);
+    expect(api.post).not.toHaveBeenCalled();
+  });
+
+  it("passes a canonical property type through update_property", async () => {
+    vi.mocked(api.patch).mockResolvedValue({ status: 200, data: { id: UUID } });
+
+    const result = await callTool("update_property", {
+      propertyId: UUID,
+      propertyType: "townhouse",
+    });
+
+    expect(result.isError).toBeFalsy();
+    expect(api.patch).toHaveBeenCalledWith(`/api/v1/properties/${UUID}`, {
+      propertyType: "townhouse",
+    });
+  });
+
+  it("passes canonical property types and the exact Studio filter through list_properties", async () => {
+    vi.mocked(api.get).mockResolvedValue({ status: 200, data: [] });
+
+    const result = await callTool("list_properties", {
+      propertyType: ["house", "condo"],
+      bedroomType: "studio",
+    });
+
+    expect(result.isError).toBeFalsy();
+    expect(api.get).toHaveBeenCalledWith("/api/v1/properties", {
+      propertyType: ["house", "condo"],
+      bedroomType: "studio",
+    });
+  });
+
   it("rejects an empty property update before making an API request", async () => {
     const result = await callTool("update_property", { propertyId: UUID });
 
@@ -134,6 +197,15 @@ describe("CRM eligibility and effect metadata", () => {
     expect(byName.get("delete_contact")?.description).not.toContain("restored later");
     expect(byName.get("delete_showing")?.description).toContain("cancel");
     expect(byName.get("delete_showing")?.description).not.toContain("permanently delete a showing");
+  });
+
+  it("documents canonical property types and exact Studio semantics", async () => {
+    const { tools } = await client.listTools();
+    const byName = new Map(tools.map((tool) => [tool.name, tool]));
+
+    expect(byName.get("list_properties")?.description).toContain("property type");
+    expect(byName.get("list_properties")?.description).toContain("bedrooms=0");
+    expect(byName.get("list_properties")?.description).not.toContain("Studio is a property type");
   });
 
   it("returns explicit soft-delete and cancellation outcomes", async () => {

@@ -35,6 +35,9 @@ Rotating an API key or switching clients does not reset account-wide trial usage
 ### Properties
 CRUD for private rental property listings. Create requires address, monthly rent, bedrooms, and bathrooms; an optional title is derived from the address when omitted.
 - Statuses: active, rented, inactive, archived
+- Canonical property types: house, apartment, condo, townhouse, room. The field is optional on writes and nullable on historical reads.
+- Studio is not a property type; use the exact \`bedroomType=studio\` filter for listings with \`bedrooms=0\`.
+- List filters include repeatable \`propertyType\` values and \`bedroomType=studio\`.
 - DELETE is a soft-delete that removes the property from API results; it is not permanent erasure.
 
 ### Contacts

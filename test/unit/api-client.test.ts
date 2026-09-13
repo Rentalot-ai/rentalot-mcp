@@ -35,4 +35,21 @@ describe("ApiClient quota recovery", () => {
     expect(response.headers["x-trial-requests-remaining"]).toBe("699");
     expect(response.error?.message).toContain("Retry-After: 12 seconds");
   });
+
+  it("serializes array query parameters as repeated values", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ data: [] }), { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await new ApiClient({
+      baseUrl: "http://localhost:3000",
+      apiKey: "ra_fake",
+    }).get("/api/v1/properties", {
+      propertyType: ["house", "condo"],
+      bedroomType: "studio",
+    });
+
+    const requestUrl = new URL(String(fetchMock.mock.calls[0]?.[0]));
+    expect(requestUrl.searchParams.getAll("propertyType")).toEqual(["house", "condo"]);
+    expect(requestUrl.searchParams.get("bedroomType")).toBe("studio");
+  });
 });

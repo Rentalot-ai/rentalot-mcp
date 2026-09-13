@@ -15,6 +15,8 @@ export interface ApiResponse<T = unknown> {
   headers: Record<string, string>;
 }
 
+type QueryValue = string | number | boolean | readonly (string | number | boolean)[] | undefined;
+
 export class ApiClient {
   private baseUrl: string;
   private apiKey: string;
@@ -24,11 +26,16 @@ export class ApiClient {
     this.apiKey = config.apiKey;
   }
 
-  async get<T = unknown>(path: string, params?: Record<string, string | number | boolean | undefined>): Promise<ApiResponse<T>> {
+  async get<T = unknown>(path: string, params?: Record<string, QueryValue>): Promise<ApiResponse<T>> {
     const url = new URL(`${this.baseUrl}${path}`);
     if (params) {
       for (const [key, value] of Object.entries(params)) {
-        if (value !== undefined) url.searchParams.set(key, String(value));
+        if (value === undefined) continue;
+        if (Array.isArray(value)) {
+          for (const item of value) url.searchParams.append(key, String(item));
+        } else {
+          url.searchParams.set(key, String(value));
+        }
       }
     }
     return this.request<T>(url.toString(), { method: "GET" });

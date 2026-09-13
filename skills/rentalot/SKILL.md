@@ -44,11 +44,13 @@ This skill covers the full tool surface, common workflows, API patterns, and dom
 | `update_property` | PATCH | `/api/v1/properties/{id}` |
 | `delete_property` | DELETE | `/api/v1/properties/{id}` |
 
-**Statuses:** `active`, `rented`, `inactive`, `maintenance`, `draft`, `archived`
+**Statuses:** `active`, `rented`, `inactive`, `archived`
 
-**Filters:** `status`, `minRent`, `maxRent`, `minBedrooms`, `city`, `page`, `limit`
+**Property types:** `house`, `apartment`, `condo`, `townhouse`, `room` (optional on writes; nullable for legacy reads). Studio is represented by `bedrooms=0`, not a property type.
 
-**Fields:** address, monthlyRent, bedrooms, bathrooms, city, state, zip, status, description, features, availabilityDate, petPolicy, parking, laundry
+**Filters:** `status`, repeatable `propertyType`, exact `bedroomType=studio`, `minRent`, `maxRent`, `minBedrooms`, `city`, `page`, `limit`
+
+**Fields:** title, address, monthlyRent, bedrooms, propertyType, bathrooms, city, state, zip, status, description, features, availabilityDate, petPolicy, parking, laundry
 
 ### Contacts
 

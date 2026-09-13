@@ -3,6 +3,7 @@ import { z } from "zod";
 import { ApiClient } from "../api-client.js";
 
 const STATUS_ENUM = ["active", "rented", "inactive", "archived"] as const;
+const PROPERTY_TYPE_ENUM = ["house", "apartment", "condo", "townhouse", "room"] as const;
 const PET_POLICY_ENUM = ["allowed", "not-allowed", "negotiable"] as const;
 const PARKING_ENUM = ["included", "available", "none"] as const;
 const LAUNDRY_ENUM = ["in-unit", "in-building", "none"] as const;
@@ -14,6 +15,7 @@ const updatePropertyInputSchema = z
     address: z.string().trim().min(1).max(500).optional().describe("Street address"),
     monthlyRent: z.number().int().positive().max(1000000).optional().describe("Monthly rent amount"),
     bedrooms: z.number().int().nonnegative().max(50).optional().describe("Number of bedrooms"),
+    propertyType: z.enum(PROPERTY_TYPE_ENUM).optional().describe("Canonical rental property type"),
     bathrooms: z.number().positive().max(50).optional().describe("Number of bathrooms"),
     city: z.string().max(200).optional().describe("City"),
     state: z.string().max(100).optional().describe("State"),
@@ -47,13 +49,15 @@ const updatePropertyInputSchema = z
 export function registerPropertyTools(server: McpServer, api: ApiClient) {
   server.tool(
     "list_properties",
-    "Use to list rental properties. Supports filtering by rent range, bedrooms, bathrooms, availability date, pet policy, parking, and city. Returns paginated results. During the development-only trial, results are limited to private properties owned by the authenticated account.",
+    "Use to list rental properties. Supports filtering by rent range, bedrooms, bathrooms, canonical property type, exact Studio layout, availability date, pet policy, parking, and city. Repeat propertyType values to match any selected type; use bedroomType=studio for listings with exactly bedrooms=0. Returns paginated results. During the development-only trial, results are limited to private properties owned by the authenticated account.",
     {
       page: z.number().int().positive().optional().describe("Page number for pagination"),
       limit: z.number().int().positive().max(100).optional().describe("Results per page (max 100; trial requests are capped at 20)"),
       minRent: z.number().positive().optional().describe("Minimum monthly rent"),
       maxRent: z.number().positive().optional().describe("Maximum monthly rent"),
       minBedrooms: z.number().int().nonnegative().optional().describe("Minimum number of bedrooms"),
+      propertyType: z.array(z.enum(PROPERTY_TYPE_ENUM)).min(1).optional().describe("Repeatable canonical rental property type filter"),
+      bedroomType: z.enum(["studio"]).optional().describe("Exact bedroom layout; studio matches listings with bedrooms=0"),
       minBathrooms: z.number().positive().optional().describe("Minimum number of bathrooms"),
       availableBefore: z.string().date().optional().describe("Filter properties available before this date (ISO 8601 YYYY-MM-DD)"),
       petFriendly: z.boolean().optional().describe("Filter by pet-friendly properties"),
@@ -92,6 +96,7 @@ export function registerPropertyTools(server: McpServer, api: ApiClient) {
       address: z.string().trim().min(1).max(500).describe("Street address of the property"),
       monthlyRent: z.number().int().positive().max(1000000).describe("Monthly rent amount"),
       bedrooms: z.number().int().nonnegative().max(50).describe("Number of bedrooms"),
+      propertyType: z.enum(PROPERTY_TYPE_ENUM).optional().describe("Canonical rental property type; Studio is represented by bedrooms=0"),
       bathrooms: z.number().positive().max(50).describe("Number of bathrooms"),
       city: z.string().max(200).optional().describe("City"),
       state: z.string().max(100).optional().describe("State"),
