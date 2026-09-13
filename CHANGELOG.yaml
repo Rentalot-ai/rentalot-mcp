@@ -7,6 +7,7 @@ versions:
         changed:
             - Document development-only trial eligibility and account-wide quota recovery
             - Align property tools with canonical propertyType and exact Studio filters
+            - Align Makefile test target with Vitest
     0.2.2:
         date: 2026-04-08
         changed:

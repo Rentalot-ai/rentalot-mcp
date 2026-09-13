@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - Document development-only trial eligibility and account-wide quota recovery
 - Align property tools with canonical propertyType and exact Studio filters
+- Align Makefile test target with Vitest
 
 ## [0.2.2] - 2026-04-08
 

@@ -18,7 +18,7 @@ dev:
 	bun run dev
 
 test:
-	bun test
+	bun run test
 
 lint:
 	bun run lint
