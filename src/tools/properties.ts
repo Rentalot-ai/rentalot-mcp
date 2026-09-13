@@ -8,8 +8,7 @@ const PET_POLICY_ENUM = ["allowed", "not-allowed", "negotiable"] as const;
 const PARKING_ENUM = ["included", "available", "none"] as const;
 const LAUNDRY_ENUM = ["in-unit", "in-building", "none"] as const;
 
-const updatePropertyInputSchema = z
-  .object({
+const updatePropertyInputShape = {
     propertyId: z.string().uuid().describe("The property UUID to update"),
     title: z.string().trim().min(1).max(500).optional().describe("Replacement property title"),
     address: z.string().trim().min(1).max(500).optional().describe("Street address"),
@@ -40,7 +39,10 @@ const updatePropertyInputSchema = z
     internalNotes: z.string().max(5000).optional().describe("Internal notes (not shown to prospects)"),
     isPublic: z.boolean().optional().describe("Whether the property is publicly listed"),
     ownerId: z.string().uuid().optional().describe("UUID of the property owner contact"),
-  })
+} as const;
+
+const updatePropertyInputSchema = z
+  .object(updatePropertyInputShape)
   .refine(
     (data) => Object.entries(data).some(([key, value]) => key !== "propertyId" && value !== undefined),
     { message: "At least one field must be provided for update" },
@@ -136,10 +138,18 @@ export function registerPropertyTools(server: McpServer, api: ApiClient) {
     "update_property",
     {
       description: "Use to update an existing private property. Only include fields you want to change. During the development-only trial, updates are limited to private properties owned by the authenticated account. Write operation — available on Pro and Scale API plans and, when the development-only trial is enabled, for private account-owned property/contact CRUD. Starter remains read-only.",
-      inputSchema: updatePropertyInputSchema,
+      inputSchema: updatePropertyInputShape,
     },
     async ({ propertyId, ...body }) => {
-      const res = await api.patch(`/api/v1/properties/${propertyId}`, body);
+      const parsed = updatePropertyInputSchema.safeParse({ propertyId, ...body });
+      if (!parsed.success) {
+        return {
+          content: [{ type: "text" as const, text: `Error: ${parsed.error.issues[0]?.message ?? "Invalid property update"}` }],
+          isError: true,
+        };
+      }
+      const { propertyId: parsedPropertyId, ...parsedBody } = parsed.data;
+      const res = await api.patch(`/api/v1/properties/${parsedPropertyId}`, parsedBody);
       if (res.error) {
         return { content: [{ type: "text" as const, text: `Error: ${res.error.message}` }], isError: true };
       }

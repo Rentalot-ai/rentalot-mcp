@@ -130,4 +130,22 @@ describe("registered CRM tools over a real MCP client and HTTP loopback", () => 
     expect(requestUrl.searchParams.get("bedroomType")).toBe("studio");
     expect(requestUrl.searchParams.get("propertyType")).not.toBe("studio");
   });
+
+  it("advertises update_property fields and optional write fields through tools/list", async () => {
+    const { tools } = await client.listTools();
+    const updateProperty = tools.find((tool) => tool.name === "update_property");
+    const schema = updateProperty?.inputSchema as {
+      properties?: Record<string, unknown>;
+      required?: string[];
+    };
+
+    expect(schema.properties).toEqual(expect.objectContaining({
+      propertyId: expect.any(Object),
+      title: expect.any(Object),
+      propertyType: expect.any(Object),
+    }));
+    expect(schema.required).toContain("propertyId");
+    expect(schema.required).not.toContain("title");
+    expect(schema.required).not.toContain("propertyType");
+  });
 });
