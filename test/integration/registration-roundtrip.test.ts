@@ -131,6 +131,33 @@ describe("registered CRM tools over a real MCP client and HTTP loopback", () => 
     expect(requestUrl.searchParams.get("propertyType")).not.toBe("studio");
   });
 
+  for (const name of ["create_property", "update_property"]) {
+    const baseArguments = name === "create_property"
+      ? { address: "123 Main St", monthlyRent: 2400, bedrooms: 2, bathrooms: 1 }
+      : { propertyId: PROPERTY_ID };
+
+    it(`${name} accepts a unit-only clear and the 50-character boundary`, async () => {
+      for (const unitNumber of [null, "", " ", "A".repeat(50)]) {
+        const result = await client.callTool({
+          name,
+          arguments: { ...baseArguments, unitNumber },
+        });
+        expect(result.isError).toBeFalsy();
+      }
+    });
+
+    it(`${name} rejects oversized and non-string unit numbers before HTTP`, async () => {
+      for (const unitNumber of ["A".repeat(51), 4]) {
+        const result = await client.callTool({
+          name,
+          arguments: { ...baseArguments, unitNumber },
+        });
+        expect(result.isError).toBe(true);
+      }
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+  }
+
   it("advertises update_property fields and optional write fields through tools/list", async () => {
     const { tools } = await client.listTools();
     const updateProperty = tools.find((tool) => tool.name === "update_property");

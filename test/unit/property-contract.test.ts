@@ -29,6 +29,19 @@ describe("property OpenAPI contract", () => {
     expect(property.required).toContain("propertyType");
   });
 
+  it("returns nullable unit and building fields without allowing buildingId on writes", () => {
+    const property = fixture.components.schemas.Property;
+    expect(property.properties?.unitNumber).toMatchObject({ type: "string", nullable: true });
+    expect(property.properties?.buildingId).toMatchObject({ type: "string", nullable: true, format: "uuid" });
+    expect(property.required).toEqual(expect.arrayContaining(["unitNumber", "buildingId"]));
+    for (const schemaName of ["CreatePropertyRequest", "UpdatePropertyRequest"]) {
+      const schema = fixture.components.schemas[schemaName];
+      expect(schema.properties?.unitNumber).toMatchObject({ type: "string", nullable: true, maxLength: 50 });
+      expect(schema.required ?? []).not.toContain("unitNumber");
+      expect(schema.properties).not.toHaveProperty("buildingId");
+    }
+  });
+
   it("keeps title and propertyType optional on property writes", () => {
     for (const schemaName of ["CreatePropertyRequest", "UpdatePropertyRequest"]) {
       const schema = fixture.components.schemas[schemaName];

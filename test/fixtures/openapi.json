@@ -3,7 +3,7 @@
   "info": {
     "title": "Rentalot API",
     "version": "1.0.0",
-    "description": "REST API for Rentalot -- an AI-powered rental agent platform that manages inquiry response, showing scheduling, messaging, and follow-ups across WhatsApp, Telegram, SMS, and Gmail.\n\n## Authentication\nAll endpoints require a Bearer token (API key) in the `Authorization` header. Generate API keys in the Rentalot dashboard under Settings > API Keys. Keys are prefixed with `ra_`.\n\n```\nAuthorization: Bearer ra_your_api_key_here\n```\n\n## Rate Limits\nEvery response includes rate limit headers:\n- `X-RateLimit-Limit` -- max requests per minute for your tier\n- `X-RateLimit-Remaining` -- requests remaining in the current window\n- `X-RateLimit-Reset` -- Unix timestamp when the window resets\n- `X-RateLimit-Resource` -- which resource the request counted against\n\nWhen rate limited (HTTP 429), a `Retry-After` header indicates seconds to wait.\n\n### Per-Tier Limits\n| Tier | Global RPM | Daily Requests | Write Access | Max Page Size | API Keys | Webhooks |\n|------|-----------|----------------|--------------|---------------|----------|----------|\n| Free Trial | -- | -- | No | -- | 0 | 0 |\n| Starter ($29/mo) | 30 | 5,000 | Read-only | 50 | 2 | 0 |\n| Pro ($79/mo) | 120 | 50,000 | Full CRUD | 100 | 5 | 10 |\n| Scale ($199/mo) | 600 | 500,000 | Full + Priority | 200 | 20 | 50 |\n\nWrite operations (POST, PATCH, DELETE) are only available on Pro and Scale tiers. Starter tier has read-only API access. Free Trial has no API access.\n\n### Per-Resource Write Limits (Pro / Scale)\n| Resource | WPM | Daily Writes | Monthly Writes |\n|----------|-----|-------------|----------------|\n| Properties | 20 / 60 | 200 / 1,000 | 5,000 / 25,000 |\n| Contacts | 15 / 40 | 150 / 500 | 3,000 / 10,000 |\n| Showings | 10 / 30 | 100 / 300 | 2,000 / 5,000 |\n| Messages | 5 / 15 | 50 / 200 | 500 / 3,000 |\n| Drafts | 10 / 30 | 50 / 200 | 1,000 / 5,000 |\n| Follow-ups | 5 / 15 | 30 / 100 | 500 / 2,000 |\n| Workflows | 5 / 15 | 30 / 100 | 500 / 2,000 |\n| Webhooks | 5 / 10 | 20 / 50 | 200 / 500 |\n\n## Pagination\nAll list endpoints support pagination with `page` (1-indexed) and `limit` (max 100) query parameters. Responses include a `pagination` object with `page`, `limit`, `total`, and `totalPages`.\n\n## Errors\nErrors follow a consistent format with a machine-readable `code` and human-readable `message`. Validation errors (422) include a `details` array with per-field messages.\n\n## Idempotency\nPOST endpoints support the `Idempotency-Key` header to prevent duplicate operations. Use a unique UUID for each request. Repeated requests with the same key return the original response.\n\n## Webhooks\nSubscribe to real-time events (inquiry.created, message.received, showing.booked, etc.) via webhook subscriptions. Payloads are signed with HMAC-SHA256 -- verify using the `X-Webhook-Signature` header and your webhook secret."
+    "description": "REST API for Rentalot -- an AI-powered rental agent platform that manages inquiry response, showing scheduling, messaging, and follow-ups across Gmail (with additional channels in private beta).\n\n## Authentication\nAll endpoints require a Bearer token (API key) in the `Authorization` header. Generate API keys in the Rentalot dashboard under Settings > API Keys. Keys are prefixed with `ra_`.\n\n```\nAuthorization: Bearer ra_your_api_key_here\n```\n\n## Rate Limits\nEvery response includes rate limit headers:\n- `X-RateLimit-Limit` -- max requests per minute for your tier\n- `X-RateLimit-Remaining` -- requests remaining in the current window\n- `X-RateLimit-Reset` -- Unix timestamp when the window resets\n- `X-RateLimit-Resource` -- which resource the request counted against\n\nWhen rate limited (HTTP 429), a `Retry-After` header indicates seconds to wait.\nFor the Free Trial preview, daily total and resource-write exhaustion can be retried after the next UTC midnight. Lifetime exhaustion requires an upgrade and is not reset by key rotation. A usage-store failure fails closed with a five-second retry interval.\n\n### Per-Tier Limits\n| Tier | Global RPM | Daily Requests | Write Access | Max Page Size | API Keys | Webhooks |\n|------|-----------|----------------|--------------|---------------|----------|----------|\n| Free Trial | 20/account | 200/day, 700/trial | Core property/contact CRUD | 20 | 2 | 0 |\n| Starter ($29/mo) | 30 | 5,000 | Read-only | 50 | 2 | 0 |\n| Pro ($79/mo) | 120 | 50,000 | Full CRUD | 100 | 5 | 10 |\n| Scale ($199/mo) | 600 | 500,000 | Full + Priority | 200 | 20 | 50 |\n\nWrite operations on the full API surface are only available on Pro and Scale tiers. Starter tier has read-only API access. The released Free Trial API is available in production while the server-side trial access gate is enabled and the account has a future trial deadline. It is limited to account-owned, private, image-free property/contact CRUD. Trial requests cannot use property image endpoints, image URL imports, bulk operations, messages, workflows, showings, webhooks, provider integrations, or AI/outbound actions.\nSignup requires email verification. Production signup and general auth rate limits do not provide cross-account identity or Sybil prevention, and the current account schema/control plane has no account-suspension authority. Do not treat trial API access as a substitute for signup abuse controls.\n\n### Per-Resource Write Limits (Pro / Scale)\n| Resource | WPM | Daily Writes | Monthly Writes |\n|----------|-----|-------------|----------------|\n| Properties | 20 / 60 | 200 / 1,000 | 5,000 / 25,000 |\n| Contacts | 15 / 40 | 150 / 500 | 3,000 / 10,000 |\n| Showings | 10 / 30 | 100 / 300 | 2,000 / 5,000 |\n| Messages | 5 / 15 | 50 / 200 | 500 / 3,000 |\n| Drafts | 10 / 30 | 50 / 200 | 1,000 / 5,000 |\n| Follow-ups | 5 / 15 | 30 / 100 | 500 / 2,000 |\n| Workflows | 5 / 15 | 30 / 100 | 500 / 2,000 |\n| Webhooks | 5 / 10 | 20 / 50 | 200 / 500 |\n\n## Pagination\nAll list endpoints support pagination with `page` (1-indexed) and `limit` (max 100) query parameters. The Free Trial page-size cap is 20. Responses include a `pagination` object with `page`, `limit`, `total`, and `totalPages`.\n\n## Errors\nErrors follow a consistent format with a machine-readable `code` and human-readable `message`. Validation errors (422) include a `details` array with per-field messages.\n\n## Idempotency\nPOST endpoints that declare idempotency support accept the `Idempotency-Key` header as a completion cache. Use a unique UUID for each request. Repeated requests with the same key return the original completed response, but the cache does not serialize concurrent first attempts. Quota accounting is charge-on-attempt.\n\n## Webhooks\nSubscribe to real-time events (inquiry.created, message.received, showing.booked, etc.) via webhook subscriptions. Payloads are signed with HMAC-SHA256 -- verify using the `X-Webhook-Signature` header and your webhook secret."
   },
   "servers": [
     {
@@ -12,7 +12,13 @@
     },
     {
       "url": "http://localhost:3000",
-      "description": "Local development"
+      "description": "Local development",
+      "x-internal": true
+    }
+  ],
+  "security": [
+    {
+      "BearerAuth": []
     }
   ],
   "tags": [
@@ -80,54 +86,43 @@
     "schemas": {
       "PropertyId": {
         "type": "string",
-        "format": "uuid",
-        "description": "Property UUID",
-        "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+        "format": "uuid"
       },
       "ContactId": {
         "type": "string",
-        "format": "uuid",
-        "description": "Contact UUID"
+        "format": "uuid"
       },
       "ConversationId": {
         "type": "string",
-        "format": "uuid",
-        "description": "Conversation UUID"
+        "format": "uuid"
       },
       "ShowingId": {
         "type": "string",
-        "format": "uuid",
-        "description": "Showing UUID"
+        "format": "uuid"
       },
       "DraftId": {
         "type": "string",
-        "format": "uuid",
-        "description": "Draft UUID"
+        "format": "uuid"
       },
       "FollowupId": {
         "type": "string",
-        "format": "uuid",
-        "description": "Follow-up UUID"
+        "format": "uuid"
       },
       "WorkflowId": {
         "type": "string",
-        "format": "uuid",
-        "description": "Workflow template UUID"
+        "format": "uuid"
       },
       "WorkflowRunId": {
         "type": "string",
-        "format": "uuid",
-        "description": "Workflow run UUID"
+        "format": "uuid"
       },
       "WebhookId": {
         "type": "string",
-        "format": "uuid",
-        "description": "Webhook subscription UUID"
+        "format": "uuid"
       },
       "JobId": {
         "type": "string",
-        "format": "uuid",
-        "description": "Async job UUID"
+        "format": "uuid"
       },
       "SessionId": {
         "type": "string",
@@ -198,6 +193,18 @@
             "description": "Canonical rental property type. Null means unknown or not supplied; Studio is represented by bedrooms=0.",
             "example": "apartment"
           },
+          "unitNumber": {
+            "type": "string",
+            "nullable": true,
+            "description": "Unit number within a multi-unit building, without a prefix such as Unit or Apt. Parsed from the address for apartments and condos when not supplied.",
+            "example": "4B"
+          },
+          "buildingId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid",
+            "description": "Read-only. Building this unit is grouped into, set automatically for apartments and condos with a unit number that share a street address, city, and ZIP."
+          },
           "bathrooms": {
             "type": "number",
             "description": "Number of bathrooms (supports 0.5 increments)",
@@ -263,6 +270,8 @@
           "monthlyRent",
           "bedrooms",
           "propertyType",
+          "unitNumber",
+          "buildingId",
           "bathrooms",
           "features",
           "availabilityDate",
@@ -504,6 +513,13 @@
           "internalNotes": {
             "type": "string",
             "maxLength": 5000
+          },
+          "unitNumber": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 50,
+            "description": "Unit number within a multi-unit building (e.g. \"4B\"). For apartments and condos, omitted values are parsed from a trailing Unit/Apt/Suite/# in the address, and units sharing a street address, city, and ZIP are grouped into one building. Send null on update to clear.",
+            "example": "4B"
           }
         },
         "required": [
@@ -683,6 +699,13 @@
           "internalNotes": {
             "type": "string",
             "maxLength": 5000
+          },
+          "unitNumber": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 50,
+            "description": "Unit number within a multi-unit building (e.g. \"4B\"). For apartments and condos, omitted values are parsed from a trailing Unit/Apt/Suite/# in the address, and units sharing a street address, city, and ZIP are grouped into one building. Send null on update to clear.",
+            "example": "4B"
           }
         }
       },
@@ -727,13 +750,13 @@
             "type": "string",
             "nullable": true,
             "description": "Preferred messaging channel",
-            "example": "whatsapp"
+            "example": "gmail"
           },
           "source": {
             "type": "string",
             "nullable": true,
             "description": "How the contact was acquired",
-            "example": "telegram"
+            "example": "gmail"
           },
           "referralSource": {
             "type": "string",
@@ -838,8 +861,8 @@
           },
           "channel": {
             "type": "string",
-            "description": "Channel the conversation is on (whatsapp, telegram, sms, gmail)",
-            "example": "whatsapp"
+            "description": "Channel the conversation is on (e.g. 'gmail')",
+            "example": "gmail"
           },
           "status": {
             "type": "string",
@@ -2300,8 +2323,7 @@
             "enum": [
               "image/jpeg",
               "image/png",
-              "image/webp",
-              "image/heic"
+              "image/webp"
             ]
           },
           "sizeBytes": {
@@ -2330,8 +2352,7 @@
             "enum": [
               "image/jpeg",
               "image/png",
-              "image/webp",
-              "image/heic"
+              "image/webp"
             ]
           },
           "sizeBytes": {
@@ -2386,8 +2407,7 @@
                   "enum": [
                     "image/jpeg",
                     "image/png",
-                    "image/webp",
-                    "image/heic"
+                    "image/webp"
                   ]
                 },
                 "sizeBytes": {
@@ -2429,8 +2449,7 @@
                   "enum": [
                     "image/jpeg",
                     "image/png",
-                    "image/webp",
-                    "image/heic"
+                    "image/webp"
                   ]
                 },
                 "sizeBytes": {
@@ -2659,6 +2678,14 @@
           "schedulingEmailEnabled": {
             "type": "boolean",
             "description": "Enable scheduling confirmation emails"
+          },
+          "dailyLeasingBriefEnabled": {
+            "type": "boolean",
+            "description": "Receive daily leasing brief emails"
+          },
+          "dailyLeasingBriefNoActivityEnabled": {
+            "type": "boolean",
+            "description": "Receive no-activity daily leasing brief emails"
           }
         },
         "required": [
@@ -2666,7 +2693,9 @@
           "applicationNotifications",
           "notifyProspectOnReview",
           "emailProspectMatches",
-          "schedulingEmailEnabled"
+          "schedulingEmailEnabled",
+          "dailyLeasingBriefEnabled",
+          "dailyLeasingBriefNoActivityEnabled"
         ],
         "description": "Email notification preferences"
       },
@@ -2713,7 +2742,7 @@
           },
           "publicChatEnabled": {
             "type": "boolean",
-            "description": "Deprecated \u2014 use prescreeningEnabled"
+            "description": "Deprecated — use prescreeningEnabled"
           },
           "profilePublic": {
             "type": "boolean",
@@ -2872,14 +2901,17 @@
           "$ref": "#/components/schemas/PropertyId"
         },
         "required": true,
+        "description": "Property UUID",
         "name": "id",
-        "in": "path"
+        "in": "path",
+        "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
       },
       "ContactId": {
         "schema": {
           "$ref": "#/components/schemas/ContactId"
         },
         "required": true,
+        "description": "Contact UUID",
         "name": "id",
         "in": "path"
       },
@@ -2888,6 +2920,7 @@
           "$ref": "#/components/schemas/ConversationId"
         },
         "required": true,
+        "description": "Conversation UUID",
         "name": "id",
         "in": "path"
       },
@@ -2896,6 +2929,7 @@
           "$ref": "#/components/schemas/ShowingId"
         },
         "required": true,
+        "description": "Showing UUID",
         "name": "id",
         "in": "path"
       },
@@ -2904,6 +2938,7 @@
           "$ref": "#/components/schemas/DraftId"
         },
         "required": true,
+        "description": "Draft UUID",
         "name": "id",
         "in": "path"
       },
@@ -2912,6 +2947,7 @@
           "$ref": "#/components/schemas/FollowupId"
         },
         "required": true,
+        "description": "Follow-up UUID",
         "name": "id",
         "in": "path"
       },
@@ -2920,6 +2956,7 @@
           "$ref": "#/components/schemas/WorkflowId"
         },
         "required": true,
+        "description": "Workflow template UUID",
         "name": "id",
         "in": "path"
       },
@@ -2928,6 +2965,7 @@
           "$ref": "#/components/schemas/WorkflowRunId"
         },
         "required": true,
+        "description": "Workflow run UUID",
         "name": "id",
         "in": "path"
       },
@@ -2936,6 +2974,7 @@
           "$ref": "#/components/schemas/WebhookId"
         },
         "required": true,
+        "description": "Webhook subscription UUID",
         "name": "id",
         "in": "path"
       },
@@ -2944,6 +2983,7 @@
           "$ref": "#/components/schemas/JobId"
         },
         "required": true,
+        "description": "Async job UUID",
         "name": "jobId",
         "in": "path"
       },
@@ -2962,14 +3002,9 @@
       "post": {
         "operationId": "createProperty",
         "summary": "Create a property",
-        "description": "Use to add a new rental property listing to the authenticated tenant's portfolio. Provide at minimum the address, monthly rent, bedrooms, and bathrooms. The title is optional for backward compatibility: when omitted, Rentalot derives it from the address; when provided, the explicit title takes precedence. The property is created with status 'active' by default (configurable via the `status` field). Side effects: increments daily/monthly write counters. Requires Pro or Scale tier for API write access. Rate limit: Pro 20 WPM / 200 daily / 5,000 monthly; Scale 60 WPM / 1,000 daily / 25,000 monthly.",
+        "description": "Use to add a new rental property listing to the authenticated tenant's portfolio. Provide at minimum the address, monthly rent, bedrooms, and bathrooms. The title is optional for backward compatibility: when omitted, Rentalot derives it from the address; when provided, the explicit title takes precedence. The property is created with status 'active' by default (configurable via the `status` field). Side effects: increments the applicable request and write counters. The bounded Free Trial API permits only private, image-free property creation and suppresses geocoding and outbound webhook/notification effects; paid plans retain their existing behavior. Requires Pro or Scale tier for the full paid API write surface. Rate limit: Pro 20 WPM / 200 daily / 5,000 monthly; Scale 60 WPM / 1,000 daily / 25,000 monthly.",
         "tags": [
           "Properties"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "requestBody": {
           "required": true,
@@ -3051,7 +3086,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -3102,14 +3137,9 @@
       "get": {
         "operationId": "listProperties",
         "summary": "List properties",
-        "description": "Use to list rental properties owned by the authenticated tenant. Supports pagination via `page` and `limit` query parameters. Returns at most `limit` properties per page (max page size is tier-dependent: Starter 50, Pro 100, Scale 200). Results are ordered by creation date. Read-only, no side effects.",
+        "description": "Use to list rental properties owned by the authenticated tenant. Supports pagination via `page` and `limit` query parameters. Returns at most `limit` properties per page (max page size is tier-dependent: Free Trial 20, Starter 50, Pro 100, Scale 200). Results are ordered by creation date. Read-only, no side effects. Free Trial access is available for this property route while the released trial gate and trial deadline are valid.",
         "tags": [
           "Properties"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "parameters": [
           {
@@ -3130,7 +3160,7 @@
               "maximum": 100
             },
             "required": false,
-            "description": "Items per page. Default: 20. Max: 100 (tier-dependent: Starter 50, Pro 100, Scale 200).",
+            "description": "Items per page. Default: 20. Max is tier-dependent: Free Trial 20, Starter 50, Pro 100, Scale 200.",
             "example": 20,
             "name": "limit",
             "in": "query"
@@ -3262,7 +3292,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -3315,14 +3345,9 @@
       "get": {
         "operationId": "getProperty",
         "summary": "Get a property",
-        "description": "Use to retrieve a single property by its UUID. Returns the full property record including all enriched fields (amenities, pet policy, parking, lease terms, etc.). Returns 404 if the property does not exist or belongs to a different tenant. Read-only, no side effects.",
+        "description": "Use to retrieve a single property by its UUID. Returns the full property record including all enriched fields (amenities, pet policy, parking, lease terms, etc.). Returns 404 if the property does not exist or belongs to a different tenant. Read-only, no side effects. Free Trial access is available for account-owned properties while the released trial gate and trial deadline are valid.",
         "tags": [
           "Properties"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "parameters": [
           {
@@ -3399,7 +3424,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -3450,14 +3475,9 @@
       "patch": {
         "operationId": "updateProperty",
         "summary": "Update a property",
-        "description": "Use to partially update a property. Send only the fields you want to change -- all fields are optional, but at least one must be provided. Common use cases: update rent amount, change status to 'rented' or 'inactive', update availability date. Side effects: increments daily/monthly write counters, may trigger 'property.updated' webhook if subscribed. Requires Pro or Scale tier for API write access.",
+        "description": "Use to partially update a property. Send only the fields you want to change -- all fields are optional, but at least one must be provided. Common use cases: update rent amount, change status to 'rented' or 'inactive', update availability date. Side effects: increments the applicable request and write counters, and may trigger 'property.updated' webhook on paid plans. During the Free Trial, updates are private-only, reject already-public or image-bearing properties, and suppress geocoding and outbound webhook/notification effects. Requires Pro or Scale tier for the full paid API write surface.",
         "tags": [
           "Properties"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "parameters": [
           {
@@ -3554,7 +3574,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -3605,14 +3625,9 @@
       "delete": {
         "operationId": "deleteProperty",
         "summary": "Delete a property",
-        "description": "Use to permanently delete a property by ID. Returns 204 No Content on success. This is a hard delete -- the property and its associated images are removed. Showings and conversations referencing this property are NOT deleted but will have a dangling reference. Side effects: increments daily/monthly write counters. Requires Pro or Scale tier for API write access.",
+        "description": "Use to permanently delete a property by ID. Returns 204 No Content on success. This is a hard delete -- the property and its associated images are removed on the paid path. Showings and conversations referencing this property are NOT deleted but will have a dangling reference. Side effects: increments the applicable request and write counters. During the Free Trial, deletion is limited to private properties without images; the paid path retains its existing image cleanup behavior. Requires Pro or Scale tier for the full paid API write surface.",
         "tags": [
           "Properties"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "parameters": [
           {
@@ -3644,7 +3659,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -3697,38 +3712,31 @@
       "get": {
         "operationId": "listContacts",
         "summary": "List contacts",
-        "description": "Use to list prospect/tenant contacts for the authenticated tenant. Supports filtering by status (prospect, scheduled, applicant, renter, archived), channel preference, and free-text search (matches name, email, phone). Contacts can also be created via POST /api/v1/contacts. Read-only, no side effects.",
+        "description": "Use to list prospect/tenant contacts for the authenticated tenant. Supports filtering by status (prospect, scheduled, applicant, renter, archived), channel preference, and free-text search (matches name, email, phone). Contacts can also be created via POST /api/v1/contacts. Read-only, no side effects. Free Trial access is limited to account-owned contacts while the released trial gate and trial deadline are valid.",
         "tags": [
           "Contacts"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "parameters": [
           {
             "schema": {
               "type": "integer",
-              "minimum": 0,
-              "exclusiveMinimum": true,
-              "description": "Page number for pagination (1-indexed). Default: 1.",
-              "example": 1
+              "minimum": 1
             },
             "required": false,
+            "description": "Page number for pagination (1-indexed). Default: 1.",
+            "example": 1,
             "name": "page",
             "in": "query"
           },
           {
             "schema": {
               "type": "integer",
-              "minimum": 0,
-              "exclusiveMinimum": true,
-              "maximum": 100,
-              "description": "Items per page. Default: 20. Max: 100 (tier-dependent: Starter 50, Pro 100, Scale 200).",
-              "example": 20
+              "minimum": 1,
+              "maximum": 100
             },
             "required": false,
+            "description": "Items per page. Default: 20. Max is tier-dependent: Free Trial 20, Starter 50, Pro 100, Scale 200.",
+            "example": 20,
             "name": "limit",
             "in": "query"
           },
@@ -3741,31 +3749,31 @@
                 "applicant",
                 "renter",
                 "archived"
-              ],
-              "description": "Filter by contact lifecycle status"
+              ]
             },
             "required": false,
+            "description": "Filter by contact lifecycle status",
             "name": "status",
             "in": "query"
           },
           {
             "schema": {
-              "type": "string",
-              "description": "Filter by channel preference (whatsapp, telegram, sms, gmail)",
-              "example": "whatsapp"
+              "type": "string"
             },
             "required": false,
+            "description": "Filter by channel preference",
+            "example": "gmail",
             "name": "channel",
             "in": "query"
           },
           {
             "schema": {
               "type": "string",
-              "maxLength": 200,
-              "description": "Free-text search across name, email, and phone (case-insensitive substring match)",
-              "example": "jane"
+              "maxLength": 200
             },
             "required": false,
+            "description": "Free-text search across name, email, and phone (case-insensitive substring match)",
+            "example": "jane",
             "name": "search",
             "in": "query"
           }
@@ -3865,7 +3873,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -3916,14 +3924,9 @@
       "post": {
         "operationId": "createContact",
         "summary": "Create a contact",
-        "description": "Use to create a new contact (prospect/tenant) for the authenticated tenant. Requires a name and at least one of email or phone. The contact is created with status 'prospect' by default and source 'api'. Side effects: increments daily/monthly write counters, triggers 'contact.updated' webhook. Requires Pro or Scale tier for API write access. Rate limit: Pro 15 WPM / 150 daily / 3,000 monthly; Scale 40 WPM / 500 daily / 10,000 monthly.",
+        "description": "Use to create a new contact (prospect/tenant) for the authenticated tenant. Requires a name and at least one of email or phone. The contact is created with status 'prospect' by default and source 'api'. Side effects: increments the applicable request and write counters, and may trigger 'contact.updated' webhook on the paid path. During the Free Trial, contact creation suppresses outbound webhook and notification effects. Requires Pro or Scale tier for the full paid API write surface. Rate limit: Pro 15 WPM / 150 daily / 3,000 monthly; Scale 40 WPM / 500 daily / 10,000 monthly.",
         "tags": [
           "Contacts"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "requestBody": {
           "required": true,
@@ -4005,7 +4008,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -4058,14 +4061,9 @@
       "get": {
         "operationId": "getContact",
         "summary": "Get a contact",
-        "description": "Use to retrieve a single contact by UUID. Returns the full contact record including status, channel preference, and source information. Read-only, no side effects.",
+        "description": "Use to retrieve a single contact by UUID. Returns the full contact record including status, channel preference, and source information. Read-only, no side effects. Free Trial access is available for account-owned contacts while the released trial gate and trial deadline are valid.",
         "tags": [
           "Contacts"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "parameters": [
           {
@@ -4142,7 +4140,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -4193,14 +4191,9 @@
       "patch": {
         "operationId": "updateContact",
         "summary": "Update a contact",
-        "description": "Use to update a contact's metadata such as name, email, phone, status, or channel preference. Contacts can be created via POST and soft-archived by setting status to 'archived' (no hard delete). Side effects: increments daily/monthly write counters, may trigger 'contact.updated' webhook. Requires Pro or Scale tier for API write access.",
+        "description": "Use to update a contact's metadata such as name, email, phone, status, or channel preference. Contacts can be created via POST and soft-archived by setting status to 'archived' (no hard delete). Side effects: increments the applicable request and write counters, and may trigger 'contact.updated' webhook on the paid path. During the Free Trial, contact mutations suppress outbound webhook and notification effects. Requires Pro or Scale tier for the full paid API write surface.",
         "tags": [
           "Contacts"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "parameters": [
           {
@@ -4297,7 +4290,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -4348,14 +4341,9 @@
       "delete": {
         "operationId": "deleteContact",
         "summary": "Delete a contact",
-        "description": "Use to soft-delete a contact by setting its deletedAt timestamp. The contact will no longer appear in list queries but is retained for compliance. Returns 204 No Content on success. Side effects: increments daily/monthly write counters. Requires Pro or Scale tier for API write access.",
+        "description": "Use to soft-delete a contact by setting its deletedAt timestamp. The contact will no longer appear in list queries but is retained for compliance. Returns 204 No Content on success. Side effects: increments the applicable request and write counters. During the Free Trial, contact mutations suppress outbound webhook and notification effects. Requires Pro or Scale tier for the full paid API write surface.",
         "tags": [
           "Contacts"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "parameters": [
           {
@@ -4387,7 +4375,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -4440,48 +4428,41 @@
       "get": {
         "operationId": "listConversations",
         "summary": "List conversations",
-        "description": "Use to list messaging conversations for the authenticated tenant. Each conversation belongs to a contact and a channel (WhatsApp, Telegram, SMS, Gmail). Supports filtering by contactId and status (active, archived). Results are ordered by most recent message first. Read-only, no side effects. Conversations are read-only via the API -- they are created automatically from inbound messages.",
+        "description": "Use to list messaging conversations for the authenticated tenant. Each conversation belongs to a contact and a channel (e.g. Gmail). Supports filtering by contactId and status (active, archived). Results are ordered by most recent message first. Read-only, no side effects. Conversations are read-only via the API -- they are created automatically from inbound messages.",
         "tags": [
           "Conversations"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "parameters": [
           {
             "schema": {
               "type": "integer",
-              "minimum": 0,
-              "exclusiveMinimum": true,
-              "description": "Page number for pagination (1-indexed). Default: 1.",
-              "example": 1
+              "minimum": 1
             },
             "required": false,
+            "description": "Page number for pagination (1-indexed). Default: 1.",
+            "example": 1,
             "name": "page",
             "in": "query"
           },
           {
             "schema": {
               "type": "integer",
-              "minimum": 0,
-              "exclusiveMinimum": true,
-              "maximum": 100,
-              "description": "Items per page. Default: 20. Max: 100 (tier-dependent: Starter 50, Pro 100, Scale 200).",
-              "example": 20
+              "minimum": 1,
+              "maximum": 100
             },
             "required": false,
+            "description": "Items per page. Default: 20. Max is tier-dependent: Free Trial 20, Starter 50, Pro 100, Scale 200.",
+            "example": 20,
             "name": "limit",
             "in": "query"
           },
           {
             "schema": {
               "type": "string",
-              "format": "uuid",
-              "description": "Filter by contact UUID to see all conversations with a specific contact"
+              "format": "uuid"
             },
             "required": false,
+            "description": "Filter by contact UUID to see all conversations with a specific contact",
             "name": "contactId",
             "in": "query"
           },
@@ -4491,10 +4472,10 @@
               "enum": [
                 "active",
                 "archived"
-              ],
-              "description": "Filter by conversation status"
+              ]
             },
             "required": false,
+            "description": "Filter by conversation status",
             "name": "status",
             "in": "query"
           }
@@ -4594,7 +4575,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -4650,11 +4631,6 @@
         "description": "Use to retrieve details for a specific conversation by ID. Returns the conversation metadata (channel, status, message count). Returns 404 if the conversation does not exist or belongs to a different tenant. Read-only, no side effects.",
         "tags": [
           "Conversations"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "parameters": [
           {
@@ -4731,7 +4707,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -4788,11 +4764,6 @@
         "tags": [
           "Conversations"
         ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
         "parameters": [
           {
             "$ref": "#/components/parameters/ConversationId"
@@ -4800,25 +4771,23 @@
           {
             "schema": {
               "type": "integer",
-              "minimum": 0,
-              "exclusiveMinimum": true,
-              "description": "Page number for pagination (1-indexed). Default: 1.",
-              "example": 1
+              "minimum": 1
             },
             "required": false,
+            "description": "Page number for pagination (1-indexed). Default: 1.",
+            "example": 1,
             "name": "page",
             "in": "query"
           },
           {
             "schema": {
               "type": "integer",
-              "minimum": 0,
-              "exclusiveMinimum": true,
-              "maximum": 100,
-              "description": "Items per page. Default: 20. Max: 100 (tier-dependent: Starter 50, Pro 100, Scale 200).",
-              "example": 20
+              "minimum": 1,
+              "maximum": 100
             },
             "required": false,
+            "description": "Items per page. Default: 20. Max is tier-dependent: Free Trial 20, Starter 50, Pro 100, Scale 200.",
+            "example": 20,
             "name": "limit",
             "in": "query"
           }
@@ -4912,7 +4881,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -4969,54 +4938,47 @@
         "tags": [
           "Showings"
         ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
         "parameters": [
           {
             "schema": {
               "type": "integer",
-              "minimum": 0,
-              "exclusiveMinimum": true,
-              "description": "Page number for pagination (1-indexed). Default: 1.",
-              "example": 1
+              "minimum": 1
             },
             "required": false,
+            "description": "Page number for pagination (1-indexed). Default: 1.",
+            "example": 1,
             "name": "page",
             "in": "query"
           },
           {
             "schema": {
               "type": "integer",
-              "minimum": 0,
-              "exclusiveMinimum": true,
-              "maximum": 100,
-              "description": "Items per page. Default: 20. Max: 100 (tier-dependent: Starter 50, Pro 100, Scale 200).",
-              "example": 20
+              "minimum": 1,
+              "maximum": 100
             },
             "required": false,
+            "description": "Items per page. Default: 20. Max is tier-dependent: Free Trial 20, Starter 50, Pro 100, Scale 200.",
+            "example": 20,
             "name": "limit",
             "in": "query"
           },
           {
             "schema": {
               "type": "string",
-              "format": "uuid",
-              "description": "Filter by property UUID"
+              "format": "uuid"
             },
             "required": false,
+            "description": "Filter by property UUID",
             "name": "propertyId",
             "in": "query"
           },
           {
             "schema": {
               "type": "string",
-              "format": "uuid",
-              "description": "Filter by contact UUID"
+              "format": "uuid"
             },
             "required": false,
+            "description": "Filter by contact UUID",
             "name": "contactId",
             "in": "query"
           },
@@ -5028,30 +4990,30 @@
                 "confirmed",
                 "completed",
                 "cancelled"
-              ],
-              "description": "Filter by showing status"
+              ]
             },
             "required": false,
+            "description": "Filter by showing status",
             "name": "status",
             "in": "query"
           },
           {
             "schema": {
-              "type": "string",
-              "description": "Only showings starting after this ISO 8601 datetime",
-              "example": "2026-03-01T00:00:00Z"
+              "type": "string"
             },
             "required": false,
+            "description": "Only showings starting after this ISO 8601 datetime",
+            "example": "2026-03-01T00:00:00Z",
             "name": "startAfter",
             "in": "query"
           },
           {
             "schema": {
-              "type": "string",
-              "description": "Only showings starting before this ISO 8601 datetime",
-              "example": "2026-04-01T00:00:00Z"
+              "type": "string"
             },
             "required": false,
+            "description": "Only showings starting before this ISO 8601 datetime",
+            "example": "2026-04-01T00:00:00Z",
             "name": "startBefore",
             "in": "query"
           }
@@ -5151,7 +5113,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -5205,11 +5167,6 @@
         "description": "Use to schedule a new property showing for a contact. Requires propertyId, contactId, title, startTime, and endTime at minimum. The showing is created with status 'pending' by default. Side effects: increments daily/monthly write counters, triggers 'showing.booked' webhook if subscribed. Does NOT sync to Google Calendar automatically via the API (calendar sync is for dashboard-created showings only). Requires Pro or Scale tier for API write access. Rate limit: Pro 10 WPM / 100 daily / 2,000 monthly; Scale 30 WPM / 300 daily / 5,000 monthly.",
         "tags": [
           "Showings"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "requestBody": {
           "required": true,
@@ -5291,7 +5248,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -5347,11 +5304,6 @@
         "description": "Use to retrieve a single showing by UUID. Returns 404 if the showing does not exist or belongs to a different tenant. Read-only, no side effects.",
         "tags": [
           "Showings"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "parameters": [
           {
@@ -5428,7 +5380,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -5482,11 +5434,6 @@
         "description": "Use to reschedule or update a showing. Send only the fields you want to change. Common use cases: reschedule (update startTime/endTime), confirm (set status to 'confirmed'), add notes. Side effects: increments daily/monthly write counters. Requires Pro or Scale tier for API write access.",
         "tags": [
           "Showings"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "parameters": [
           {
@@ -5583,7 +5530,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -5638,11 +5585,6 @@
         "tags": [
           "Showings"
         ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
         "parameters": [
           {
             "$ref": "#/components/parameters/ShowingId"
@@ -5673,7 +5615,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -5730,54 +5672,47 @@
         "tags": [
           "Events"
         ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
         "parameters": [
           {
             "schema": {
               "type": "integer",
-              "minimum": 0,
-              "exclusiveMinimum": true,
-              "description": "Page number for pagination (1-indexed). Default: 1.",
-              "example": 1
+              "minimum": 1
             },
             "required": false,
+            "description": "Page number for pagination (1-indexed). Default: 1.",
+            "example": 1,
             "name": "page",
             "in": "query"
           },
           {
             "schema": {
               "type": "integer",
-              "minimum": 0,
-              "exclusiveMinimum": true,
-              "maximum": 100,
-              "description": "Items per page. Default: 20. Max: 100 (tier-dependent: Starter 50, Pro 100, Scale 200).",
-              "example": 20
+              "minimum": 1,
+              "maximum": 100
             },
             "required": false,
+            "description": "Items per page. Default: 20. Max is tier-dependent: Free Trial 20, Starter 50, Pro 100, Scale 200.",
+            "example": 20,
             "name": "limit",
             "in": "query"
           },
           {
             "schema": {
-              "type": "string",
-              "description": "Only events starting after this ISO 8601 datetime",
-              "example": "2026-03-01T00:00:00Z"
+              "type": "string"
             },
             "required": false,
+            "description": "Only events starting after this ISO 8601 datetime",
+            "example": "2026-03-01T00:00:00Z",
             "name": "startAfter",
             "in": "query"
           },
           {
             "schema": {
-              "type": "string",
-              "description": "Only events starting before this ISO 8601 datetime",
-              "example": "2026-04-01T00:00:00Z"
+              "type": "string"
             },
             "required": false,
+            "description": "Only events starting before this ISO 8601 datetime",
+            "example": "2026-04-01T00:00:00Z",
             "name": "startBefore",
             "in": "query"
           },
@@ -5789,10 +5724,10 @@
                 "call",
                 "inspection",
                 "meeting"
-              ],
-              "description": "Filter by event type"
+              ]
             },
             "required": false,
+            "description": "Filter by event type",
             "name": "type",
             "in": "query"
           }
@@ -5892,7 +5827,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -5945,14 +5880,9 @@
       "post": {
         "operationId": "sendMessage",
         "summary": "Send a message",
-        "description": "Use to send a message directly to a contact via their preferred channel (WhatsApp, Telegram, SMS, or Gmail). If no channel is specified, the contact's preferred channel is used automatically. The message is delivered asynchronously -- the response confirms the message was queued for delivery, not that it was received. Side effects: creates a message record, increments daily/monthly write counters, triggers 'message.sent' webhook. Cost: each sent message counts toward the monthly AI message quota. Requires Pro or Scale tier for API write access. Rate limit: Pro 5 WPM / 50 daily / 500 monthly; Scale 15 WPM / 200 daily / 3,000 monthly.",
+        "description": "Use to send a message directly to a contact via their preferred channel. If no channel is specified, the contact's preferred channel is used automatically. The message is delivered asynchronously -- the response confirms the message was queued for delivery, not that it was received. Side effects: creates a message record, increments daily/monthly write counters, triggers 'message.sent' webhook. Cost: each sent message counts toward the monthly AI message quota. Requires Pro or Scale tier for API write access. Rate limit: Pro 5 WPM / 50 daily / 500 monthly; Scale 15 WPM / 200 daily / 3,000 monthly.",
         "tags": [
           "Messages"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "requestBody": {
           "required": true,
@@ -6034,7 +5964,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -6091,34 +6021,27 @@
         "tags": [
           "Drafts"
         ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
         "parameters": [
           {
             "schema": {
               "type": "integer",
-              "minimum": 0,
-              "exclusiveMinimum": true,
-              "description": "Page number for pagination (1-indexed). Default: 1.",
-              "example": 1
+              "minimum": 1
             },
             "required": false,
+            "description": "Page number for pagination (1-indexed). Default: 1.",
+            "example": 1,
             "name": "page",
             "in": "query"
           },
           {
             "schema": {
               "type": "integer",
-              "minimum": 0,
-              "exclusiveMinimum": true,
-              "maximum": 100,
-              "description": "Items per page. Default: 20. Max: 100 (tier-dependent: Starter 50, Pro 100, Scale 200).",
-              "example": 20
+              "minimum": 1,
+              "maximum": 100
             },
             "required": false,
+            "description": "Items per page. Default: 20. Max is tier-dependent: Free Trial 20, Starter 50, Pro 100, Scale 200.",
+            "example": 20,
             "name": "limit",
             "in": "query"
           },
@@ -6129,20 +6052,20 @@
                 "pending",
                 "sent",
                 "expired"
-              ],
-              "description": "Filter by draft status. 'pending' = editable, 'sent' = delivered, 'expired' = auto-expired."
+              ]
             },
             "required": false,
+            "description": "Filter by draft status. 'pending' = editable, 'sent' = delivered, 'expired' = auto-expired.",
             "name": "status",
             "in": "query"
           },
           {
             "schema": {
               "type": "string",
-              "format": "uuid",
-              "description": "Filter by target contact UUID"
+              "format": "uuid"
             },
             "required": false,
+            "description": "Filter by target contact UUID",
             "name": "contactId",
             "in": "query"
           }
@@ -6242,7 +6165,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -6296,11 +6219,6 @@
         "description": "Use to create a new draft message for a contact. The draft can be reviewed and edited before sending via the sendDraft endpoint. Drafts auto-expire after 24 hours if not sent. Side effects: increments daily/monthly write counters. Requires Pro or Scale tier for API write access. Rate limit: Pro 10 WPM / 50 daily / 1,000 monthly; Scale 30 WPM / 200 daily / 5,000 monthly.",
         "tags": [
           "Drafts"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "requestBody": {
           "required": true,
@@ -6382,7 +6300,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -6438,11 +6356,6 @@
         "description": "Use to retrieve a single draft by UUID. Read-only, no side effects.",
         "tags": [
           "Drafts"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "parameters": [
           {
@@ -6519,7 +6432,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -6573,11 +6486,6 @@
         "description": "Use to edit a draft message body or change its target channel. Only drafts with status 'pending' can be updated -- sent and expired drafts are immutable. Side effects: increments daily/monthly write counters. Requires Pro or Scale tier for API write access.",
         "tags": [
           "Drafts"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "parameters": [
           {
@@ -6674,7 +6582,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -6729,11 +6637,6 @@
         "tags": [
           "Drafts"
         ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
         "parameters": [
           {
             "$ref": "#/components/parameters/DraftId"
@@ -6764,7 +6667,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -6817,14 +6720,9 @@
       "post": {
         "operationId": "sendDraft",
         "summary": "Send a draft",
-        "description": "Use to finalize and send a pending draft message. On success, the draft status changes to 'sent' and the response includes deep links for each supported channel (e.g., a WhatsApp deep link that opens the conversation in WhatsApp with the message pre-filled). Only drafts with status 'pending' can be sent. Side effects: sends the message to the contact, increments write counters, triggers 'message.sent' webhook. Requires Pro or Scale tier for API write access.",
+        "description": "Use to finalize and send a pending draft message. On success, the draft status changes to 'sent' and the response includes deep links for each supported channel. Only drafts with status 'pending' can be sent. Side effects: sends the message to the contact, increments write counters, triggers 'message.sent' webhook. Requires Pro or Scale tier for API write access.",
         "tags": [
           "Drafts"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "parameters": [
           {
@@ -6882,8 +6780,7 @@
                           },
                           "description": "Channel name -> deep link URL mapping for opening the sent message in native apps",
                           "example": {
-                            "whatsapp": "https://wa.me/15125551234?text=...",
-                            "telegram": "https://t.me/..."
+                            "gmail": "https://mail.google.com/mail/u/0/#inbox/..."
                           }
                         }
                       },
@@ -6931,7 +6828,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -6988,34 +6885,27 @@
         "tags": [
           "Follow-ups"
         ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
         "parameters": [
           {
             "schema": {
               "type": "integer",
-              "minimum": 0,
-              "exclusiveMinimum": true,
-              "description": "Page number for pagination (1-indexed). Default: 1.",
-              "example": 1
+              "minimum": 1
             },
             "required": false,
+            "description": "Page number for pagination (1-indexed). Default: 1.",
+            "example": 1,
             "name": "page",
             "in": "query"
           },
           {
             "schema": {
               "type": "integer",
-              "minimum": 0,
-              "exclusiveMinimum": true,
-              "maximum": 100,
-              "description": "Items per page. Default: 20. Max: 100 (tier-dependent: Starter 50, Pro 100, Scale 200).",
-              "example": 20
+              "minimum": 1,
+              "maximum": 100
             },
             "required": false,
+            "description": "Items per page. Default: 20. Max is tier-dependent: Free Trial 20, Starter 50, Pro 100, Scale 200.",
+            "example": 20,
             "name": "limit",
             "in": "query"
           },
@@ -7028,20 +6918,20 @@
                 "sent",
                 "cancelled",
                 "failed"
-              ],
-              "description": "Filter by follow-up status"
+              ]
             },
             "required": false,
+            "description": "Filter by follow-up status",
             "name": "status",
             "in": "query"
           },
           {
             "schema": {
               "type": "string",
-              "format": "uuid",
-              "description": "Filter by contact UUID"
+              "format": "uuid"
             },
             "required": false,
+            "description": "Filter by contact UUID",
             "name": "contactId",
             "in": "query"
           }
@@ -7141,7 +7031,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -7195,11 +7085,6 @@
         "description": "Use to schedule a follow-up message for a contact at a specific future time. Requires a contactId, conversationId (for context), and scheduledAt (ISO 8601 datetime). The follow-up will be automatically sent at the scheduled time via the Inngest async pipeline. If the contact replies before the follow-up fires, the follow-up is automatically cancelled to avoid redundant messages. Side effects: increments daily/monthly write counters. Requires Pro or Scale tier for API write access. Rate limit: Pro 5 WPM / 30 daily / 500 monthly; Scale 15 WPM / 100 daily / 2,000 monthly.",
         "tags": [
           "Follow-ups"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "requestBody": {
           "required": true,
@@ -7281,7 +7166,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -7337,11 +7222,6 @@
         "description": "Use to retrieve a single follow-up by UUID. Read-only, no side effects.",
         "tags": [
           "Follow-ups"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "parameters": [
           {
@@ -7418,7 +7298,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -7473,11 +7353,6 @@
         "tags": [
           "Follow-ups"
         ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
         "parameters": [
           {
             "$ref": "#/components/parameters/FollowupId"
@@ -7508,7 +7383,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -7565,34 +7440,27 @@
         "tags": [
           "Workflows"
         ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
         "parameters": [
           {
             "schema": {
               "type": "integer",
-              "minimum": 0,
-              "exclusiveMinimum": true,
-              "description": "Page number for pagination (1-indexed). Default: 1.",
-              "example": 1
+              "minimum": 1
             },
             "required": false,
+            "description": "Page number for pagination (1-indexed). Default: 1.",
+            "example": 1,
             "name": "page",
             "in": "query"
           },
           {
             "schema": {
               "type": "integer",
-              "minimum": 0,
-              "exclusiveMinimum": true,
-              "maximum": 100,
-              "description": "Items per page. Default: 20. Max: 100 (tier-dependent: Starter 50, Pro 100, Scale 200).",
-              "example": 20
+              "minimum": 1,
+              "maximum": 100
             },
             "required": false,
+            "description": "Items per page. Default: 20. Max is tier-dependent: Free Trial 20, Starter 50, Pro 100, Scale 200.",
+            "example": 20,
             "name": "limit",
             "in": "query"
           }
@@ -7692,7 +7560,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -7746,11 +7614,6 @@
         "description": "Use to create a new workflow template with steps, trigger type, and configuration. The slug is auto-generated from the name (unique per tenant). An initial version snapshot is created automatically. Side effects: creates a workflow_template record + version snapshot, emits workflow.created webhook. Supports Idempotency-Key header to prevent duplicate creation. Requires Pro or Scale tier for API write access.",
         "tags": [
           "Workflows"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "requestBody": {
           "required": true,
@@ -7832,7 +7695,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -7888,11 +7751,6 @@
         "description": "Use to retrieve a single workflow template by UUID, including its name, description, and public/active status. Read-only, no side effects.",
         "tags": [
           "Workflows"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "parameters": [
           {
@@ -7969,7 +7827,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -8023,11 +7881,6 @@
         "description": "Use to partially update a workflow template. Only include fields you want to change. If execution-affecting fields change (steps, exitConditions, questionConfig, completionConfig, introMessage), a new version snapshot is created automatically and currentVersion is incremented. Side effects: may create workflow_template_version, emits workflow.updated webhook. Requires Pro or Scale tier for API write access.",
         "tags": [
           "Workflows"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "parameters": [
           {
@@ -8124,7 +7977,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -8178,11 +8031,6 @@
         "description": "Use to permanently delete a workflow template. Fails with 409 if the template has active runs (pending, running, or paused). Cancel or complete active runs before deleting. Side effects: cascading delete of versions and completed runs, emits workflow.deleted webhook. Requires Pro or Scale tier for API write access.",
         "tags": [
           "Workflows"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "parameters": [
           {
@@ -8244,7 +8092,7 @@
             }
           },
           "409": {
-            "description": "Conflict \u2014 template has active runs",
+            "description": "Conflict — template has active runs",
             "content": {
               "application/json": {
                 "schema": {
@@ -8254,7 +8102,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -8311,54 +8159,47 @@
         "tags": [
           "Workflows"
         ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
         "parameters": [
           {
             "schema": {
               "type": "integer",
-              "minimum": 0,
-              "exclusiveMinimum": true,
-              "description": "Page number for pagination (1-indexed). Default: 1.",
-              "example": 1
+              "minimum": 1
             },
             "required": false,
+            "description": "Page number for pagination (1-indexed). Default: 1.",
+            "example": 1,
             "name": "page",
             "in": "query"
           },
           {
             "schema": {
               "type": "integer",
-              "minimum": 0,
-              "exclusiveMinimum": true,
-              "maximum": 100,
-              "description": "Items per page. Default: 20. Max: 100 (tier-dependent: Starter 50, Pro 100, Scale 200).",
-              "example": 20
+              "minimum": 1,
+              "maximum": 100
             },
             "required": false,
+            "description": "Items per page. Default: 20. Max is tier-dependent: Free Trial 20, Starter 50, Pro 100, Scale 200.",
+            "example": 20,
             "name": "limit",
             "in": "query"
           },
           {
             "schema": {
               "type": "string",
-              "format": "uuid",
-              "description": "Filter runs by workflow template UUID"
+              "format": "uuid"
             },
             "required": false,
+            "description": "Filter runs by workflow template UUID",
             "name": "templateId",
             "in": "query"
           },
           {
             "schema": {
               "type": "string",
-              "format": "uuid",
-              "description": "Filter runs by contact UUID"
+              "format": "uuid"
             },
             "required": false,
+            "description": "Filter runs by contact UUID",
             "name": "contactId",
             "in": "query"
           },
@@ -8372,10 +8213,10 @@
                 "completed",
                 "cancelled",
                 "failed"
-              ],
-              "description": "Filter by run status"
+              ]
             },
             "required": false,
+            "description": "Filter by run status",
             "name": "status",
             "in": "query"
           }
@@ -8475,7 +8316,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -8529,11 +8370,6 @@
         "description": "Use to start a new workflow run for a specific contact. Requires a workflowId (template) and contactId. Optionally include a propertyId for property-scoped workflows. The workflow executes asynchronously via the Inngest durable execution engine -- the response confirms the run was started, not that it completed. Side effects: creates a workflow run, may send messages to the contact as steps execute, increments write counters. Requires Pro or Scale tier for API write access. Rate limit: Pro 5 WPM / 30 daily / 500 monthly; Scale 15 WPM / 100 daily / 2,000 monthly.",
         "tags": [
           "Workflows"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "requestBody": {
           "required": true,
@@ -8615,7 +8451,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -8671,11 +8507,6 @@
         "description": "Use to check the status and progress of a specific workflow run. Returns the current step index, messages sent count, exit reason (if completed), and timing info. Read-only, no side effects.",
         "tags": [
           "Workflows"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "parameters": [
           {
@@ -8752,7 +8583,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -8809,34 +8640,27 @@
         "tags": [
           "Webhooks"
         ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
         "parameters": [
           {
             "schema": {
               "type": "integer",
-              "minimum": 0,
-              "exclusiveMinimum": true,
-              "description": "Page number for pagination (1-indexed). Default: 1.",
-              "example": 1
+              "minimum": 1
             },
             "required": false,
+            "description": "Page number for pagination (1-indexed). Default: 1.",
+            "example": 1,
             "name": "page",
             "in": "query"
           },
           {
             "schema": {
               "type": "integer",
-              "minimum": 0,
-              "exclusiveMinimum": true,
-              "maximum": 100,
-              "description": "Items per page. Default: 20. Max: 100 (tier-dependent: Starter 50, Pro 100, Scale 200).",
-              "example": 20
+              "minimum": 1,
+              "maximum": 100
             },
             "required": false,
+            "description": "Items per page. Default: 20. Max is tier-dependent: Free Trial 20, Starter 50, Pro 100, Scale 200.",
+            "example": 20,
             "name": "limit",
             "in": "query"
           }
@@ -8936,7 +8760,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -8990,11 +8814,6 @@
         "description": "Use to create a new webhook subscription. The webhook URL must use HTTPS. Subscribe to one or more event types: inquiry.created, message.received, message.sent, showing.booked, showing.cancelled, contact.updated, property.updated, workflow.completed. The response includes a one-time `secret` field -- store it securely. Use it to verify webhook payload signatures via the `X-Webhook-Signature` HMAC-SHA256 header. Side effects: increments write counters. Requires Pro or Scale tier (webhooks not available on Starter/Free). Max subscriptions: Pro 10, Scale 50.",
         "tags": [
           "Webhooks"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "requestBody": {
           "required": true,
@@ -9076,7 +8895,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -9132,11 +8951,6 @@
         "description": "Use to retrieve a webhook subscription by UUID, including its event subscriptions and delivery status. Check `lastDeliveredAt` and `lastFailedAt` to monitor webhook health. The signing secret is NOT included -- it is only returned once at creation time. Read-only, no side effects.",
         "tags": [
           "Webhooks"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "parameters": [
           {
@@ -9213,7 +9027,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -9267,11 +9081,6 @@
         "description": "Use to update a webhook's URL, event subscriptions, active status, or description. Common use cases: pause delivery (set active=false), add new event subscriptions, rotate endpoint URL. Send only the fields you want to change. Side effects: increments write counters. Requires Pro or Scale tier.",
         "tags": [
           "Webhooks"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "parameters": [
           {
@@ -9368,7 +9177,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -9423,11 +9232,6 @@
         "tags": [
           "Webhooks"
         ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
         "parameters": [
           {
             "$ref": "#/components/parameters/WebhookId"
@@ -9458,7 +9262,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -9514,11 +9318,6 @@
         "description": "Use to send a test ping to the webhook URL to verify delivery is working. The test payload mirrors the real webhook format with a 'test' event type. Check the response `statusCode` to confirm your endpoint returned 2xx. Side effects: sends an HTTP request to the configured webhook URL, increments write counters. Requires Pro or Scale tier.",
         "tags": [
           "Webhooks"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "parameters": [
           {
@@ -9610,7 +9409,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -9666,11 +9465,6 @@
         "description": "Use to rotate the signing secret for a webhook subscription. Returns the new secret (shown once). All future webhook payloads will be signed with the new secret. Side effects: invalidates the previous secret immediately. Requires Pro or Scale tier.",
         "tags": [
           "Webhooks"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "parameters": [
           {
@@ -9762,7 +9556,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -9819,34 +9613,28 @@
         "tags": [
           "Conversations"
         ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
         "parameters": [
           {
             "schema": {
               "type": "string",
               "minLength": 1,
-              "maxLength": 500,
-              "description": "Keyword to search for in message content (case-insensitive substring match)",
-              "example": "bedroom"
+              "maxLength": 500
             },
             "required": true,
+            "description": "Keyword to search for in message content (case-insensitive substring match)",
+            "example": "bedroom",
             "name": "query",
             "in": "query"
           },
           {
             "schema": {
               "type": "integer",
-              "minimum": 0,
-              "exclusiveMinimum": true,
-              "maximum": 50,
-              "description": "Maximum results to return (default 10, max 50)",
-              "example": 10
+              "minimum": 1,
+              "maximum": 50
             },
             "required": false,
+            "description": "Maximum results to return (default 10, max 50)",
+            "example": 10,
             "name": "limit",
             "in": "query"
           }
@@ -9929,7 +9717,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -9986,49 +9774,44 @@
         "tags": [
           "Showings"
         ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
         "parameters": [
           {
             "schema": {
               "type": "string",
-              "format": "uuid",
-              "description": "Filter by property UUID to check property-specific availability"
+              "format": "uuid"
             },
             "required": false,
+            "description": "Filter by property UUID to check property-specific availability",
             "name": "propertyId",
             "in": "query"
           },
           {
             "schema": {
-              "type": "string",
-              "description": "Single date to check (ISO 8601 YYYY-MM-DD). Returns slots for that day only.",
-              "example": "2026-03-15"
+              "type": "string"
             },
             "required": false,
+            "description": "Single date to check (ISO 8601 YYYY-MM-DD). Returns slots for that day only.",
+            "example": "2026-03-15",
             "name": "preferredDate",
             "in": "query"
           },
           {
             "schema": {
-              "type": "string",
-              "description": "Start of date range (ISO 8601 YYYY-MM-DD). If dateTo omitted, defaults to +7 days.",
-              "example": "2026-03-15"
+              "type": "string"
             },
             "required": false,
+            "description": "Start of date range (ISO 8601 YYYY-MM-DD). If dateTo omitted, defaults to +7 days.",
+            "example": "2026-03-15",
             "name": "dateFrom",
             "in": "query"
           },
           {
             "schema": {
-              "type": "string",
-              "description": "End of date range (ISO 8601 YYYY-MM-DD)",
-              "example": "2026-03-22"
+              "type": "string"
             },
             "required": false,
+            "description": "End of date range (ISO 8601 YYYY-MM-DD)",
+            "example": "2026-03-22",
             "name": "dateTo",
             "in": "query"
           }
@@ -10137,7 +9920,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -10193,11 +9976,6 @@
         "description": "Use to list all images for a property, ordered by display order. Returns public URLs (served via Cloudflare Image Transformations) -- no R2 keys or internal metadata. Read-only, no side effects.",
         "tags": [
           "Property Images"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "parameters": [
           {
@@ -10277,7 +10055,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -10331,11 +10109,6 @@
         "description": "Use to delete one or more images from a property. Pass an array of image IDs in the request body. Images are permanently removed from both the database and R2 storage. Side effects: increments write counters, triggers 'property.updated' webhook. Requires Pro or Scale tier.",
         "tags": [
           "Property Images"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "parameters": [
           {
@@ -10438,7 +10211,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -10491,14 +10264,9 @@
       "post": {
         "operationId": "presignImageUpload",
         "summary": "Get presigned upload URL",
-        "description": "Use to get a presigned URL for uploading an image directly to Cloudflare R2. The client uploads the file to the returned `uploadUrl` via PUT. After upload, call the confirm endpoint with the returned `r2Key` to create the DB record. Allowed types: image/jpeg, image/png, image/webp, image/heic. Max size: 10MB. Image count is tier-limited (check `maxImages` in the response). Side effects: increments write counters. Requires Pro or Scale tier.",
+        "description": "Use to get a presigned URL for uploading an image directly to Cloudflare R2. The client uploads the file to the returned `uploadUrl` via PUT. After upload, call the confirm endpoint with the returned `r2Key` to create the DB record. Allowed types: image/jpeg, image/png, image/webp. Max size: 10MB. Image count is tier-limited (check `maxImages` in the response). Side effects: increments write counters. Requires Pro or Scale tier.",
         "tags": [
           "Property Images"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "parameters": [
           {
@@ -10597,7 +10365,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -10650,14 +10418,9 @@
       "post": {
         "operationId": "confirmImageUpload",
         "summary": "Confirm image upload",
-        "description": "Use to confirm an image upload after uploading to the presigned URL. Creates the database record and makes the image available in the property listing. The `r2Key` must match the key returned from the presign endpoint. Supports idempotency via the `Idempotency-Key` header. Side effects: increments write counters, triggers 'property.updated' webhook. Requires Pro or Scale tier.",
+        "description": "Use to confirm an image upload after uploading to the presigned URL. Creates the database record and makes the image available in the property listing. The `r2Key` must match the key returned from the presign endpoint. The uploaded bytes are checked before the record is created: they must be a real JPEG, PNG or WebP and pass NSFW screening. A rejected upload is deleted and returns 422; the stored content type and size come from the bytes. Supports idempotency via the `Idempotency-Key` header. Side effects: increments write counters, triggers 'property.updated' webhook. Requires Pro or Scale tier.",
         "tags": [
           "Property Images"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "parameters": [
           {
@@ -10744,7 +10507,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -10800,11 +10563,6 @@
         "description": "Use to set the display order of property images. Pass an ordered array of image IDs -- the first ID gets order 0, second gets order 1, etc. Side effects: increments write counters, triggers 'property.updated' webhook. Requires Pro or Scale tier.",
         "tags": [
           "Property Images"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "parameters": [
           {
@@ -10891,7 +10649,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -10944,14 +10702,9 @@
       "post": {
         "operationId": "presignImageBatch",
         "summary": "Get presigned upload URLs (batch)",
-        "description": "Use to get presigned upload URLs for up to 20 images in a single request. Each image entry returns an `uploadUrl` and `r2Key`. Upload files via PUT, then call confirm-batch. Allowed types: image/jpeg, image/png, image/webp, image/heic. Max 10MB per image. Side effects: increments write counters. Requires Pro or Scale tier.",
+        "description": "Use to get presigned upload URLs for up to 20 images in a single request. Each image entry returns an `uploadUrl` and `r2Key`. Upload files via PUT, then call confirm-batch. Allowed types: image/jpeg, image/png, image/webp. Max 10MB per image. Side effects: increments write counters. Requires Pro or Scale tier.",
         "tags": [
           "Property Images"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "parameters": [
           {
@@ -11061,7 +10814,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -11114,14 +10867,9 @@
       "post": {
         "operationId": "confirmImageBatch",
         "summary": "Confirm image uploads (batch)",
-        "description": "Use to confirm multiple image uploads after uploading to the presigned URLs. Creates database records for each image and makes them available in the property listing. Side effects: increments write counters, triggers 'property.updated' webhook. Requires Pro or Scale tier.",
+        "description": "Use to confirm multiple image uploads after uploading to the presigned URLs. Creates database records for each image and makes them available in the property listing. Every upload is checked like the single confirm endpoint (real JPEG/PNG/WebP, NSFW screening); if any image is rejected, the rejected uploads are deleted and the whole batch returns 422 naming each rejected image. Side effects: increments write counters, triggers 'property.updated' webhook. Requires Pro or Scale tier.",
         "tags": [
           "Property Images"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "parameters": [
           {
@@ -11211,7 +10959,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -11264,14 +11012,9 @@
       "post": {
         "operationId": "importPropertyImages",
         "summary": "Import images by URL",
-        "description": "Use to import up to 20 images from external URLs. Returns a job ID for polling status via the import job endpoint. Images are downloaded, validated, and stored asynchronously. Side effects: creates an async job, increments write counters. Requires Pro or Scale tier.",
+        "description": "Use to import up to 20 images from external URLs. Returns a job ID for polling status via the import job endpoint. Images are downloaded, validated (real JPEG/PNG/WebP bytes), NSFW-screened, and stored asynchronously. Rejected images are listed in the job's per-URL `errors`. Side effects: creates an async job, increments write counters. Requires Pro or Scale tier.",
         "tags": [
           "Property Images"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "parameters": [
           {
@@ -11381,7 +11124,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -11437,11 +11180,6 @@
         "description": "Use to poll the status of an image import job. Returns progress (imported/failed counts) and any errors. Read-only, no side effects.",
         "tags": [
           "Property Images"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "parameters": [
           {
@@ -11580,7 +11318,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -11636,11 +11374,6 @@
         "description": "Use to create up to 500 properties in a single request. Returns a job ID for polling status. Properties are validated and created asynchronously. Side effects: creates an async job, increments write counters. Requires Pro or Scale tier.",
         "tags": [
           "Properties"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "requestBody": {
           "required": true,
@@ -11745,7 +11478,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -11801,11 +11534,6 @@
         "description": "Use to poll the status of a bulk property import job. Returns progress (created/failed counts), created property IDs, and any errors. Read-only, no side effects.",
         "tags": [
           "Properties"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "parameters": [
           {
@@ -11951,7 +11679,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -12008,54 +11736,47 @@
         "tags": [
           "Sessions"
         ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
         "parameters": [
           {
             "schema": {
               "type": "integer",
-              "minimum": 0,
-              "exclusiveMinimum": true,
-              "description": "Page number for pagination (1-indexed). Default: 1.",
-              "example": 1
+              "minimum": 1
             },
             "required": false,
+            "description": "Page number for pagination (1-indexed). Default: 1.",
+            "example": 1,
             "name": "page",
             "in": "query"
           },
           {
             "schema": {
               "type": "integer",
-              "minimum": 0,
-              "exclusiveMinimum": true,
-              "maximum": 100,
-              "description": "Items per page. Default: 20. Max: 100 (tier-dependent: Starter 50, Pro 100, Scale 200).",
-              "example": 20
+              "minimum": 1,
+              "maximum": 100
             },
             "required": false,
+            "description": "Items per page. Default: 20. Max is tier-dependent: Free Trial 20, Starter 50, Pro 100, Scale 200.",
+            "example": 20,
             "name": "limit",
             "in": "query"
           },
           {
             "schema": {
               "type": "string",
-              "format": "uuid",
-              "description": "Filter by contact UUID"
+              "format": "uuid"
             },
             "required": false,
+            "description": "Filter by contact UUID",
             "name": "contactId",
             "in": "query"
           },
           {
             "schema": {
               "type": "string",
-              "format": "uuid",
-              "description": "Filter by workflow template UUID"
+              "format": "uuid"
             },
             "required": false,
+            "description": "Filter by workflow template UUID",
             "name": "workflowTemplateId",
             "in": "query"
           },
@@ -12067,10 +11788,10 @@
                 "completed",
                 "expired",
                 "draft"
-              ],
-              "description": "Filter by session status"
+              ]
             },
             "required": false,
+            "description": "Filter by session status",
             "name": "status",
             "in": "query"
           },
@@ -12081,10 +11802,10 @@
                 "pending_review",
                 "approved",
                 "denied"
-              ],
-              "description": "Filter by review status"
+              ]
             },
             "required": false,
+            "description": "Filter by review status",
             "name": "reviewStatus",
             "in": "query"
           }
@@ -12184,7 +11905,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -12240,11 +11961,6 @@
         "description": "Use to retrieve a single pre-screening session by UUID, including submission data and review status. Read-only, no side effects.",
         "tags": [
           "Sessions"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "parameters": [
           {
@@ -12321,7 +12037,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -12377,11 +12093,6 @@
         "description": "Use to approve or deny a completed pre-screening session. Only completed sessions with reviewStatus 'pending_review' can be reviewed. On approval/denial, an email notification is sent to the prospect (if they have an email on file). Side effects: updates session, sends notification email, increments write counters. Requires Pro or Scale tier for API write access.",
         "tags": [
           "Sessions"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "parameters": [
           {
@@ -12488,7 +12199,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -12544,11 +12255,6 @@
         "description": "Use to retrieve all agent preferences and email notification settings. Returns the full settings object with defaults applied for unset fields. Read-only, no side effects.",
         "tags": [
           "Settings"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "responses": {
           "200": {
@@ -12610,7 +12316,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -12665,11 +12371,6 @@
         "tags": [
           "Settings"
         ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -12715,7 +12416,7 @@
                   },
                   "publicChatEnabled": {
                     "type": "boolean",
-                    "description": "Deprecated \u2014 use prescreeningEnabled"
+                    "description": "Deprecated — use prescreeningEnabled"
                   },
                   "profilePublic": {
                     "type": "boolean",
@@ -12897,7 +12598,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -12953,11 +12654,6 @@
         "description": "Use to retrieve the current follow-up automation settings. Controls whether automated follow-ups are enabled, the idle threshold (hours before triggering), and max sequence length. Read-only, no side effects.",
         "tags": [
           "Settings"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
         ],
         "responses": {
           "200": {
@@ -13019,7 +12715,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",
@@ -13074,11 +12770,6 @@
         "tags": [
           "Settings"
         ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -13092,15 +12783,13 @@
                   },
                   "idleHours": {
                     "type": "integer",
-                    "minimum": 0,
-                    "exclusiveMinimum": true,
+                    "minimum": 1,
                     "maximum": 168,
                     "description": "Hours of inactivity before follow-up (1-168)"
                   },
                   "maxSteps": {
                     "type": "integer",
-                    "minimum": 0,
-                    "exclusiveMinimum": true,
+                    "minimum": 1,
                     "maximum": 10,
                     "description": "Max follow-up messages (1-10)"
                   }
@@ -13179,7 +12868,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Rate limits are per-tier: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM.",
+            "description": "Rate limit exceeded. Check `X-RateLimit-Reset` header for when to retry, or `Retry-After` header (seconds). Paid-tier limits are per API key: Starter 30 RPM, Pro 120 RPM, Scale 600 RPM. The Free Trial surface is account-wide at 20 RPM, with daily and lifetime quotas.",
             "headers": {
               "X-RateLimit-Limit": {
                 "description": "Maximum requests allowed per minute for your tier",

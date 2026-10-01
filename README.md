@@ -223,6 +223,8 @@ Then invoke with `/rentalot` in any Claude Code session.
 
 Property creation and updates accept an optional canonical `propertyType`: `house`, `apartment`, `condo`, `townhouse`, or `room`. Existing callers may omit it, and legacy reads may return `null`. Studio is represented by `bedrooms=0`; use the exact `bedroomType=studio` filter, and repeat `propertyType` query values to match any selected type.
 
+`create_property` and `update_property` also accept optional `unitNumber` (string or `null`, maximum 50 characters). Pass `null` or a blank string to clear it; when omitted, the API parses a trailing `Unit`, `Apt`, `Suite`, or `#` suffix from the address. Property objects returned by list/get/create/update include `unitNumber: string | null` and read-only `buildingId: string | null`, the account-scoped building UUID grouping apartment/condo units. Do not send `buildingId` in property writes. Bulk imports accept flexible property records and pass their fields through without an explicit field map.
+
 ## Resources
 
 - `docs://api-reference` — Full API reference (authentication, rate limits, pagination, errors, all resource schemas)
