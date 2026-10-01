@@ -1,6 +1,9 @@
 project: '@rentalot/mcp-server'
 versions:
-    unreleased: {}
+    unreleased:
+        internal:
+            changed:
+                - Publish to npm via Trusted Publishing (GitHub OIDC) instead of a stored NPM_TOKEN.
     0.3.0:
         date: 2026-09-30
         fixed:

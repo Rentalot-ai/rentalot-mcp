@@ -90,6 +90,10 @@ jobs:
     name: Publish to npm
     runs-on: ubuntu-latest
     needs: release
+    # npm Trusted Publishing: OIDC exchange, no stored npm token.
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v4
 
@@ -105,13 +109,15 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: "24"
           registry-url: "https://registry.npmjs.org"
+
+      # Trusted Publishing needs npm >= 11.5.1.
+      - name: Update npm
+        run: npm install -g npm@latest
 
       - name: Publish to npm
         run: npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   notify:
     name: Post-Release
