@@ -12,6 +12,7 @@ const updatePropertyInputShape = {
     propertyId: z.string().uuid().describe("The property UUID to update"),
     title: z.string().trim().min(1).max(500).optional().describe("Replacement property title"),
     address: z.string().trim().min(1).max(500).optional().describe("Street address"),
+    unitNumber: z.string().max(50).nullable().optional().describe("Unit number (max 50 characters); null or blank clears it. When omitted, the API parses a trailing Unit/Apt/Suite/# suffix from the address"),
     monthlyRent: z.number().int().positive().max(1000000).optional().describe("Monthly rent amount"),
     bedrooms: z.number().int().nonnegative().max(50).optional().describe("Number of bedrooms"),
     propertyType: z.enum(PROPERTY_TYPE_ENUM).optional().describe("Canonical rental property type"),
@@ -51,7 +52,7 @@ const updatePropertyInputSchema = z
 export function registerPropertyTools(server: McpServer, api: ApiClient) {
   server.tool(
     "list_properties",
-    "Use to list rental properties. Supports filtering by rent range, bedrooms, bathrooms, canonical property type, exact Studio layout, availability date, pet policy, parking, and city. Repeat propertyType values to match any selected type; use bedroomType=studio for listings with exactly bedrooms=0. Returns paginated results. During the development-only trial, results are limited to private properties owned by the authenticated account.",
+    "Use to list rental properties. Supports filtering by rent range, bedrooms, bathrooms, canonical property type, exact Studio layout, availability date, pet policy, parking, and city. Repeat propertyType values to match any selected type; use bedroomType=studio for listings with exactly bedrooms=0. Returns paginated results, including nullable unitNumber and read-only nullable buildingId (account-scoped building UUID grouping apartment/condo units). During the development-only trial, results are limited to private properties owned by the authenticated account.",
     {
       page: z.number().int().positive().optional().describe("Page number for pagination"),
       limit: z.number().int().positive().max(100).optional().describe("Results per page (max 100; trial requests are capped at 20)"),
@@ -77,7 +78,7 @@ export function registerPropertyTools(server: McpServer, api: ApiClient) {
 
   server.tool(
     "get_property",
-    "Use to get full details for a specific rental property by ID. During the development-only trial, only private properties owned by the authenticated account are available.",
+    "Use to get full details for a specific rental property by ID, including nullable unitNumber and read-only nullable buildingId (account-scoped building UUID grouping apartment/condo units). During the development-only trial, only private properties owned by the authenticated account are available.",
     {
       propertyId: z.string().uuid().describe("The property UUID"),
     },
@@ -92,10 +93,11 @@ export function registerPropertyTools(server: McpServer, api: ApiClient) {
 
   server.tool(
     "create_property",
-    "Use to create a new private rental property listing. Requires address, monthly rent, bedrooms, and bathrooms at minimum. During the development-only trial, this is limited to private properties owned by the authenticated account. Write operation — available on Pro and Scale API plans and, when the development-only trial is enabled, for private account-owned property/contact CRUD. Starter remains read-only.",
+    "Use to create a new private rental property listing. Requires address, monthly rent, bedrooms, and bathrooms at minimum. Returns the property, including nullable unitNumber and read-only nullable buildingId (account-scoped building UUID grouping apartment/condo units). During the development-only trial, this is limited to private properties owned by the authenticated account. Write operation — available on Pro and Scale API plans and, when the development-only trial is enabled, for private account-owned property/contact CRUD. Starter remains read-only.",
     {
       title: z.string().trim().min(1).max(500).optional().describe("Optional human-readable property title; when omitted, the API derives one from the address"),
       address: z.string().trim().min(1).max(500).describe("Street address of the property"),
+      unitNumber: z.string().max(50).nullable().optional().describe("Unit number (max 50 characters); null or blank clears it. When omitted, the API parses a trailing Unit/Apt/Suite/# suffix from the address"),
       monthlyRent: z.number().int().positive().max(1000000).describe("Monthly rent amount"),
       bedrooms: z.number().int().nonnegative().max(50).describe("Number of bedrooms"),
       propertyType: z.enum(PROPERTY_TYPE_ENUM).optional().describe("Canonical rental property type; Studio is represented by bedrooms=0"),
@@ -137,7 +139,7 @@ export function registerPropertyTools(server: McpServer, api: ApiClient) {
   server.registerTool(
     "update_property",
     {
-      description: "Use to update an existing private property. Only include fields you want to change. During the development-only trial, updates are limited to private properties owned by the authenticated account. Write operation — available on Pro and Scale API plans and, when the development-only trial is enabled, for private account-owned property/contact CRUD. Starter remains read-only.",
+      description: "Use to update an existing private property. Only include fields you want to change. Returns the property, including nullable unitNumber and read-only nullable buildingId (account-scoped building UUID grouping apartment/condo units). During the development-only trial, updates are limited to private properties owned by the authenticated account. Write operation — available on Pro and Scale API plans and, when the development-only trial is enabled, for private account-owned property/contact CRUD. Starter remains read-only.",
       inputSchema: updatePropertyInputShape,
     },
     async ({ propertyId, ...body }) => {

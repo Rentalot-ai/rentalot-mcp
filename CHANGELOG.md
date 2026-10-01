@@ -17,6 +17,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Align property tools with canonical propertyType and exact Studio filters
 - Align Makefile test target with Vitest
 
+### Added
+
+- Property create/update tools accept nullable unitNumber (max 50 characters), and property tool docs describe unitNumber and read-only buildingId responses.
+
 ## [0.2.2] - 2026-04-08
 
 ### Changed

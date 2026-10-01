@@ -91,6 +91,7 @@ const TOOL_ENDPOINT_MAP: Record<string, [string, string]> = {
 const IGNORED_MCP_PARAMS = new Set(["idempotencyKey"]);
 
 interface OpenApiSpec {
+  components: { schemas: Record<string, JsonSchema> };
   paths: Record<string, Record<string, {
     parameters?: Array<{ name: string; in: string; required?: boolean; schema?: JsonSchema }>;
     requestBody?: {
@@ -101,6 +102,8 @@ interface OpenApiSpec {
 
 interface JsonSchema {
   type?: string;
+  nullable?: boolean;
+  maxLength?: number;
   properties?: Record<string, JsonSchema>;
   required?: string[];
   enum?: unknown[];
@@ -186,6 +189,22 @@ describe("Schema drift detection", () => {
     const unmapped = [...toolSchemas.keys()].filter((name) => !TOOL_ENDPOINT_MAP[name]);
     expect(unmapped, `Unmapped MCP tools:\n${unmapped.join("\n")}`).toEqual([]);
   });
+
+  for (const toolName of ["create_property", "update_property"]) {
+    it(`${toolName} preserves optional nullable unitNumber and its API length limit`, async () => {
+      const schemaName = toolName === "create_property" ? "CreatePropertyRequest" : "UpdatePropertyRequest";
+      const apiSchema = spec.components.schemas[schemaName];
+      const apiUnit = apiSchema.properties?.unitNumber;
+      expect(apiUnit).toMatchObject({ type: "string", nullable: true, maxLength: 50 });
+      expect(apiSchema.required ?? []).not.toContain("unitNumber");
+      const { tools } = await client.listTools();
+      expect(tools.find((tool) => tool.name === toolName)?.inputSchema.required ?? []).not.toContain("unitNumber");
+      expect(toolSchemas.get(toolName)?.unitNumber).toMatchObject({
+        anyOf: [{ type: "string", maxLength: apiUnit?.maxLength }, { type: "null" }],
+      });
+      expect(toolSchemas.get(toolName)).not.toHaveProperty("buildingId");
+    });
+  }
 
   for (const [toolName, [method, path]] of Object.entries(TOOL_ENDPOINT_MAP)) {
     describe(`${toolName} → ${method.toUpperCase()} ${path}`, () => {
