@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-09-30
+
 ### Fixed
 
 - Align MCP property and contact schemas with the canonical CRM API contract
@@ -76,7 +78,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Migrate project to Bun for improved performance
 - Add CI for lint, typecheck, build, and test
 
-[Unreleased]: https://github.com/Rentalot-ai/rentalot-mcp/compare/v0.2.2...HEAD
+[Unreleased]: https://github.com/Rentalot-ai/rentalot-mcp/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/Rentalot-ai/rentalot-mcp/compare/v0.2.2...v0.3.0
 [0.2.2]: https://github.com/Rentalot-ai/rentalot-mcp/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/Rentalot-ai/rentalot-mcp/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/Rentalot-ai/rentalot-mcp/compare/v0.1.0...v0.2.0

@@ -1,6 +1,6 @@
 {
   "name": "@rentalot/mcp-server",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "MCP server for the Rentalot API — manage rental properties, contacts, showings, and more from AI assistants",
   "license": "MIT",
   "type": "module",

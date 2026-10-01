@@ -1,6 +1,8 @@
 project: '@rentalot/mcp-server'
 versions:
-    unreleased:
+    unreleased: {}
+    0.3.0:
+        date: 2026-09-30
         fixed:
             - Align MCP property and contact schemas with the canonical CRM API contract
             - Expose update_property fields in the public MCP schema
