@@ -1,11 +1,15 @@
 #!/usr/bin/env bun
 /**
  * End-to-end test for all 37 MCP tools against the local Rentalot dev server.
- * Usage: RENTALOT_API_KEY=test-api-key-claude-pro bun test/e2e.ts
+ * Usage: RENTALOT_API_KEY=<dev API key of a seeded test user> bun test/e2e.ts
  */
 
 const BASE_URL = process.env.RENTALOT_BASE_URL ?? "http://localhost:3000";
-const API_KEY = process.env.RENTALOT_API_KEY ?? "test-api-key-claude-pro";
+const API_KEY = process.env.RENTALOT_API_KEY;
+if (!API_KEY) {
+  console.error("RENTALOT_API_KEY is required (API key of a seeded dev test user).");
+  process.exit(1);
+}
 
 interface TestResult {
   tool: string;
