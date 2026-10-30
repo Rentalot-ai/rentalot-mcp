@@ -1,4 +1,4 @@
-.PHONY: build dev test lint typecheck publish publish-dry check release-patch release-minor release-major worktree worktree-clean
+.PHONY: build dev test lint typecheck publish publish-dry check release-patch release-minor release-major worktree worktree-clean hooks secret-scan
 
 WORKTREE_SCRIPT ?= scripts/worktree-setup.sh
 BASE ?= $(shell git branch --show-current 2>/dev/null || echo HEAD)
@@ -25,6 +25,18 @@ lint:
 
 typecheck:
 	bun run typecheck
+
+hooks:
+	@hook="$$(git rev-parse --path-format=absolute --git-path hooks)/pre-commit"; \
+	if grep -qs 'gitleaks git' "$$hook"; then echo "gitleaks pre-commit already installed: $$hook"; else \
+		mkdir -p "$$(dirname "$$hook")"; \
+		[ -f "$$hook" ] || printf '#!/usr/bin/env sh\n' > "$$hook"; \
+		printf '%s\n' '# --- gitleaks secret scan (make hooks) ---' 'gitleaks git --pre-commit --staged --redact --verbose --no-banner || exit 1' >> "$$hook"; \
+		chmod +x "$$hook"; echo "installed gitleaks pre-commit: $$hook"; \
+	fi
+
+secret-scan:
+	@gitleaks dir . --redact=100 --no-banner --log-level warn
 
 publish-dry: build
 	npm publish --access public --dry-run

@@ -240,6 +240,8 @@ bun run typecheck  # tsc --noEmit
 bun run test:e2e   # E2E test all 65 tools against local dev server
 ```
 
+Commits are scanned for secrets with [gitleaks](https://github.com/gitleaks/gitleaks). Install it (`mise use -g gitleaks`, `brew install gitleaks`, or a [release binary](https://github.com/gitleaks/gitleaks/releases)), then run `make hooks` once per clone to install the pre-commit check. `make secret-scan` scans the whole tree. Config lives in `.gitleaks.toml`.
+
 ## License
 
 MIT
